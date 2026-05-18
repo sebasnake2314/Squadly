@@ -12,6 +12,10 @@ dist/
 # Claude Code
 .claude/
 
+# Skills (mattpocock/skills y otras herramientas locales)
+.agents/
+skills-lock.json
+
 # Editor
 .vscode/settings.json
 *.suo
