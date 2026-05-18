@@ -38,6 +38,7 @@ fi
 echo "📤 Subiendo a Cloudflare Pages..."
 wrangler pages deploy "$DIR/dist" \
   --project-name="$PROJECT" \
+  --branch main \
   --commit-dirty=true
 
 echo ""
