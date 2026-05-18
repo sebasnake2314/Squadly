@@ -14,9 +14,10 @@ npm run build
 
 # 2. Copiar app original (vanilla JS) y assets al dist/
 echo "📋 Copiando app original y assets..."
-cp "$DIR/index.html"  "$DIR/dist/index.html"
-cp "$DIR/styles.css"  "$DIR/dist/styles.css"
-cp "$DIR/guide.html"  "$DIR/dist/guide.html"
+cp "$DIR/index.html"        "$DIR/dist/index.html"
+cp "$DIR/styles.css"        "$DIR/dist/styles.css"
+cp "$DIR/guide.html"        "$DIR/dist/guide.html"
+cp "$DIR/firebase-config.js" "$DIR/dist/firebase-config.js"
 # Copiar carpeta public/ (manifest, iconos PWA)
 [ -d "$DIR/public" ] && cp -r "$DIR/public/." "$DIR/dist/"
 # Copiar favicon legacy si existe en raíz
