@@ -40,6 +40,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .user-name{font-size:12px;color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .logout-btn{padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:11px;cursor:pointer;transition:all .2s;}
 .logout-btn:hover{border-color:var(--danger);color:var(--danger);}
+.guide-btn{padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:11px;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;}
+.guide-btn:hover{border-color:var(--accent);color:var(--accent);}
 
 /* LOBBY */
 .lobby{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:32px 16px;}
@@ -729,6 +731,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="user-bar">
         <div class="user-avatar"><img id="userAvatar" src="" alt=""></div>
         <div class="user-name" id="userName"></div>
+        <a class="guide-btn" href="guide.html" target="_blank" title="Guía de usuario">📖 Guía</a>
         <button class="logout-btn" onclick="signOut()">Salir</button>
       </div>
     </div>
