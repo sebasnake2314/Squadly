@@ -38,7 +38,7 @@ export function getMemberStatus(
  * Estado base del miembro, ignorando el check de online.
  * Usado para mostrar el estado de asignación independientemente de conexión.
  */
-export function getMemberStatusBase(
+function getMemberStatusBase(
   memberId: string,
   ctx: Pick<RoomContext, 'history' | 'room'>,
 ): MemberStatus {
@@ -104,12 +104,6 @@ export function getEligible(
   }
 
   return ctx.members.filter(m => getMemberStatus(m.id, m.fbKey, ctx) === 'eligible')
-}
-
-/** Sorteo de hoy: busca si ya se hizo un sorteo con sortDate === hoy */
-export function getTodayConfirmed(history: HistoryEntry[]): HistoryEntry | undefined {
-  const tod = today()
-  return history.find(h => h.type === 'assigned' && !h.reverted && h.sortDate === tod)
 }
 
 /** Miembro asignado para facilitar hoy */

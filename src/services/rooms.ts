@@ -9,11 +9,11 @@ import { today } from '../utils/dates'
 
 // ---- Generadores ----
 
-export function generatePin(): string {
+function generatePin(): string {
   return String(Math.floor(1000 + Math.random() * 9000))
 }
 
-export function generateRoomCode(): string {
+function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // sin caracteres confusos
   let code = ''
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)]
@@ -154,12 +154,6 @@ export async function fetchRoomMeta(roomId: string): Promise<(RoomMeta & { roomI
   const snap = await get(ref(db, `roomsMeta/${roomId}`))
   if (!snap.exists()) return null
   return { roomId, ...(snap.val() as RoomMeta) }
-}
-
-/** Resuelve el ownerUid de una sala legacy (vía roomsIndex). */
-export async function resolveRoomOwner(roomId: string): Promise<string | null> {
-  const snap = await get(ref(db, `roomsIndex/${roomId}`))
-  return snap.exists() ? (snap.val() as string) : null
 }
 
 /** Busca un roomId por roomCode. */
