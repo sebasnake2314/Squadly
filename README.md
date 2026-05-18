@@ -1,19 +1,44 @@
 # Squadly
 
-Herramienta de facilitación de dailys para equipos de desarrollo. Los admins crean salas, los participantes se unen por link de invitación, y la app sortea aleatoriamente al facilitador usando uno de cuatro modos de juego.
+Herramienta de coordinación de equipos en tiempo real. Los administradores crean salas con dos propósitos distintos:
+
+- **Salas de sorteo** — el admin define una actividad o tarea ("¿Quién presenta el reporte?", "¿Quién modera la reunión?") y la app elige al azar quién la cumple, con mecánicas de juego para hacerlo entretenido.
+- **Salas de convocatoria** — el admin crea eventos con fechas y los participantes confirman o rechazan su asistencia.
+
+Los participantes se unen a las salas mediante un link de invitación o código, sin necesidad de crear una cuenta.
 
 **Producción:** https://squadly.pages.dev
 
 ---
 
-## Modos de juego
+## Tipos de sala
+
+### 🎰 Sorteo
+El admin define el propósito de la sala (qué actividad se sortea) y configura las reglas:
+
+| Configuración | Descripción |
+|---------------|-------------|
+| Propósito | La actividad que se asigna al sorteado ("¿Quién facilita?", "¿Quién trae la torta?") |
+| Presencia | Solo participan quienes estén en línea, o todos los miembros |
+| Días de exclusión | Cuántos días descansa alguien después de ser sorteado |
+| Cuándo cumplir | Mismo día, día siguiente, o fecha personalizada |
+| Modo de juego | Ruleta, Cartas, Tragamonedas, Bomba o Aleatorio |
+| Música de fondo | Circo, 8-bit, GameShow, Hype o sin música |
+
+### 📅 Convocatoria
+El admin crea eventos con una o varias fechas. Los participantes indican si van a asistir o no a cada fecha.
+
+---
+
+## Modos de juego (sorteo)
 
 | Modo | Descripción |
 |------|-------------|
-| 🎰 Ruleta | Ruleta giratoria con canvas |
-| 🃏 Cartas | Mazo con animación de barajeo + flip del ganador |
-| 🎰 Slots | Tragamonedas con carrete animado |
-| 💣 Bomba | Bomba con cuenta regresiva que explota en el ganador |
+| 🎰 Ruleta | Ruleta animada con canvas |
+| 🃏 Cartas | Mazo con barajeo animado y flip del ganador |
+| 🎰 Tragamonedas | Carrete animado que detiene en el ganador |
+| 💣 Bomba | Cuenta regresiva que explota revelando al seleccionado |
+| 🎲 Aleatorio | Elige un modo distinto en cada sorteo |
 
 ---
 
@@ -22,11 +47,11 @@ Herramienta de facilitación de dailys para equipos de desarrollo. Los admins cr
 | Tecnología | Uso |
 |------------|-----|
 | HTML / CSS / JS vanilla | App principal (`index.html`) |
-| React + TypeScript + Vite | App nueva en migración gradual (`src/`) |
-| Firebase Realtime Database | Sincronización en tiempo real |
+| React + TypeScript + Vite | App en migración gradual (`src/`) |
+| Firebase Realtime Database | Sincronización en tiempo real entre participantes |
 | Firebase Auth (Google) | Autenticación de administradores |
 | Cloudflare Pages | Hosting estático |
-| Web Audio API | Música y sonidos (sin archivos externos) |
+| Web Audio API | Música y efectos de sonido (sin archivos externos) |
 
 ---
 
@@ -34,12 +59,12 @@ Herramienta de facilitación de dailys para equipos de desarrollo. Los admins cr
 
 ```
 squadly/
-├── index.html          ← App vanilla JS (fuente de verdad — editar aquí)
+├── index.html          ← App principal vanilla JS (fuente de verdad)
 ├── app.html            ← Entry point React
 ├── styles.css          ← Referencia de estilos extraídos (solo lectura)
 ├── app.js              ← Referencia del JS extraído (solo lectura)
 ├── deploy.sh           ← Deploy a Cloudflare Pages
-├── vite.config.ts      ← Configuración Vite
+├── vite.config.ts
 ├── tsconfig.json
 ├── package.json
 ├── .env.example        ← Variables de entorno requeridas
@@ -55,7 +80,7 @@ squadly/
     └── views/
 ```
 
-> **Importante:** El archivo que siempre editás es `index.html`.
+> **Importante:** El archivo que siempre se edita es `index.html`.
 > `styles.css` y `app.js` son copias de referencia extraídas — no editarlas directamente.
 
 ---
@@ -93,30 +118,21 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=
 VITE_FIREBASE_APP_ID=
 ```
 
-> Las credenciales se obtienen en la consola de Firebase del proyecto `daily-roulette-15d78`.
-
 ---
 
 ## Desarrollo local
 
-### App vanilla JS (index.html)
+### App principal (index.html)
 
 1. Instalar la extensión **Live Server** en VS Code (`ritwickdey.LiveServer`)
 2. Click derecho en `index.html` → **"Open with Live Server"**
-3. Abre `http://localhost:8080` — se recarga automáticamente al guardar
+3. Abre `http://localhost:8080` — se recarga al guardar
 
 ### App React (src/)
 
 ```bash
-npm run dev
-```
-
-Abre `http://localhost:5173`
-
-### Verificar tipos TypeScript
-
-```bash
-npm run typecheck
+npm run dev        # http://localhost:5173
+npm run typecheck  # verificar tipos TypeScript
 ```
 
 ---
@@ -124,52 +140,30 @@ npm run typecheck
 ## Deploy
 
 ```bash
-# En Git Bash / Mac / Linux
+# Git Bash / Mac / Linux
 bash deploy.sh
 
-# En PowerShell (manual)
+# PowerShell (manual)
 npm run build
 Copy-Item index.html dist\index.html
 Copy-Item styles.css dist\styles.css
 wrangler pages deploy dist --project-name=squadly --commit-dirty=true
 ```
 
-El script:
-1. Compila la app React con Vite (`dist/`)
-2. Copia `index.html` y `styles.css` al `dist/`
-3. Sube todo a Cloudflare Pages con Wrangler
-
-La primera vez solicita login en Cloudflare (`wrangler login`).
+El script compila React, copia la app vanilla y sube todo a Cloudflare Pages.
+La primera vez solicita login con `wrangler login`.
 
 ---
 
 ## Arquitectura Firebase
 
 ```
-roomsMeta/{roomId}           ← Info liviana de sala (nombre, pin, icon, ownerUid)
-rooms/{ownerUid}/{roomId}    ← Config completa de sala (legacy, se sigue leyendo)
-roomsIndex/{roomId}          ← Índice ownerUid
-members/{roomId}/{memberId}
-history/{roomId}/{entryId}
-presence/{roomId}/{memberId} ← {online: bool, ts: epoch ms}
-roulette/{roomId}            ← {spinning: bool} estado de giro en tiempo real
-memberLinks/{uid}/{roomId}   ← Vincula cuenta Google con memberId
+roomsMeta/{roomId}           ← Info de sala (nombre, tipo, propósito, pin)
+rooms/{ownerUid}/{roomId}    ← Config completa (legacy, se sigue leyendo)
+members/{roomId}/{memberId}  ← Participantes de la sala
+history/{roomId}/{entryId}   ← Historial de sorteos
+presence/{roomId}/{memberId} ← Estado online en tiempo real
+roulette/{roomId}            ← Estado del sorteo en curso (sincronizado entre clientes)
+memberLinks/{uid}/{roomId}   ← Vincula cuenta Google con un memberId
+events/{roomId}/{eventId}    ← Eventos de salas de convocatoria
 ```
-
----
-
-## Tipos de sala
-
-| Tipo | Comportamiento |
-|------|----------------|
-| `sorteo` (default) | Asigna facilitador para el día siguiente |
-| `convocatoria` | Asigna para el mismo día; oculta contador de veces seleccionado |
-
----
-
-## Notas de desarrollo
-
-- Todas las funciones llamadas desde `onclick` en el HTML se asignan explícitamente a `window.*`
-- La identidad del miembro es por sesión: `localStorage` clave `dr_session_{roomId}`
-- El selector de participantes (modo offline) permite al admin elegir manualmente quién participa en el sorteo
-- La jerarquía de estados es: `facilitating_today` → `assigned_tomorrow` → `unavailable_tomorrow` → `free_day1/2` → `eligible`
