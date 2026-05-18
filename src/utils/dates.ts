@@ -43,16 +43,6 @@ export function getTaskDueDate(config: {
   return today()
 }
 
-/**
- * Fecha en la que un miembro vuelve a ser elegible,
- * después de haber facilitado en `facilitationDate` con `freeDays` días libres.
- */
-export function availableAgainDate(facilitationDate: string, freeDays: number): string {
-  const d = new Date(facilitationDate + 'T12:00:00')
-  d.setDate(d.getDate() + freeDays + 1)
-  return d.toISOString().slice(0, 10)
-}
-
 // ---- Helpers de configuración de sala ----
 
 export function getRoomFreeDays(freeDays?: number | null): number {

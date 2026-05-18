@@ -174,12 +174,12 @@ function AdminRoomCard({
         <span className="rc-admin-badge">
           {room.type === 'convocatoria' ? '📅 Convocatoria' : '🎰 Sorteo'}
         </span>
-        <span style={{ fontSize: 10, color: 'var(--accent2)', fontWeight: 600, padding: '2px 6px', background: 'rgba(108,99,255,.15)', borderRadius: 8 }}>
+        <span style={{ fontSize: 12, color: 'var(--accent2)', fontWeight: 600, padding: '2px 6px', background: 'rgba(108,99,255,.15)', borderRadius: 8 }}>
           Admin
         </span>
       </div>
       {room.purpose && (
-        <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 5, lineHeight: 1.4 }}>
+        <div style={{ fontSize: 12, color: 'var(--text2)', marginTop: 5, lineHeight: 1.4 }}>
           {room.purpose}
         </div>
       )}

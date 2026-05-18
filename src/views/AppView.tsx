@@ -162,7 +162,14 @@ function PinBox({ pin }: { pin: string }) {
     })
   }
   return (
-    <div className="pin-box" onClick={copy} title="Copiar PIN">
+    <div
+      className="pin-box"
+      role="button"
+      tabIndex={0}
+      onClick={copy}
+      onKeyDown={e => e.key === 'Enter' && copy()}
+      title="Copiar PIN"
+    >
       <span className="pin-label">PIN:</span>
       <span className="pin-value">{pin}</span>
       <span className="pin-copy">{copied ? 'Copiado' : 'Copiar'}</span>
@@ -184,9 +191,10 @@ function TeamTab({ ctx, presence, roomId, isAdmin }: { ctx: RoomContext; presenc
 
   // Conteo de veces seleccionado por member.id (solo assigned no revertidos)
   const timesSelected: Record<string, number> = {}
-  ctx.history.filter(h => h.type === 'assigned' && !h.reverted).forEach(h => {
-    timesSelected[h.memberId] = (timesSelected[h.memberId] ?? 0) + 1
-  })
+  for (const h of ctx.history) {
+    if (h.type === 'assigned' && !h.reverted)
+      timesSelected[h.memberId] = (timesSelected[h.memberId] ?? 0) + 1
+  }
 
   const [addName, setAddName] = useState('')
   const [addEmoji, setAddEmoji] = useState('\u{1F469}\u200D\u{1F4BB}')
@@ -332,7 +340,7 @@ function MemberRow({ member, ctx, freeDays, online, isAdmin, isMyRow, roomId, ti
         <div className="member-row-name">{member.name}</div>
         <StatusBadge status={status} freeDayIdx={freeDayIdx} freeDays={freeDays} />
         {!isConvocatoria && timesSelected > 0 && (
-          <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+          <span style={{ fontSize: 12, color: 'var(--text3)' }}>
             {timesSelected} {timesSelected === 1 ? 'vez seleccionado' : 'veces seleccionado'}
           </span>
         )}

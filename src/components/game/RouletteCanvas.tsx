@@ -185,6 +185,7 @@ function SlotsMode({ members, winner, onDone }: { members: Member[]; winner: Mem
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const reel = [...members, winner, ...members.slice(0, 3)]
+    .map((m, i) => ({ m, k: `${m.fbKey}-${i}` }))
 
   return (
     <div className="slots-mode">
@@ -193,8 +194,8 @@ function SlotsMode({ members, winner, onDone }: { members: Member[]; winner: Mem
           className="slots-reel"
           style={{ animationDuration: '2.2s' }}
         >
-          {reel.map((m, i) => (
-            <div key={`${m.fbKey}-${i}`} className="slots-item">
+          {reel.map(({ m, k }) => (
+            <div key={k} className="slots-item">
               <span style={{ fontSize: 28 }}>{m.emoji ?? '👤'}</span>
               <span style={{ fontSize: 12, fontWeight: 700 }}>{m.name}</span>
             </div>

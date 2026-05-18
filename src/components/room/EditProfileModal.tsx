@@ -1,7 +1,7 @@
 /**
  * EditProfileModal — el miembro edita su nombre y emoji.
  */
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { updateMember } from '../../services/rooms'
 import type { Member } from '../../types'
 
@@ -20,6 +20,8 @@ interface Props {
 export function EditProfileModal({ roomId, member, onSaved, onClose }: Props) {
   const [name, setName]   = useState(member.name)
   const [emoji, setEmoji] = useState(member.emoji ?? EMOJI_OPTIONS[0])
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => { inputRef.current?.focus() }, [])
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState<string | null>(null)
 
@@ -48,12 +50,12 @@ export function EditProfileModal({ roomId, member, onSaved, onClose }: Props) {
           <label className="form-label">
             Tu nombre
             <input
+              ref={inputRef}
               className="form-input"
               type="text"
               value={name}
               onChange={e => { setName(e.target.value); setError(null) }}
               maxLength={30}
-              autoFocus
               disabled={saving}
             />
           </label>

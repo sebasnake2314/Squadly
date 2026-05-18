@@ -12,7 +12,7 @@ const firebaseConfig = {
   appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-export const fbApp    = initializeApp(firebaseConfig)
+const fbApp           = initializeApp(firebaseConfig)
 export const db       = getDatabase(fbApp)
 export const auth     = getAuth(fbApp)
 export const provider = new GoogleAuthProvider()

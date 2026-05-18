@@ -544,9 +544,8 @@ function applyRoomHeader(){
   if(purposeEl){purposeEl.textContent=currentRoomData.purpose||'';purposeEl.title=currentRoomData.purpose||'';}
   // Admin check: el dueño ve el PIN y puede eliminar miembros
   isRoomAdmin = currentUser && currentRoomData.ownerUid === currentUser.uid;
-  document.getElementById('pinBox').style.display = isRoomAdmin ? 'flex' : 'none';
+  ['pinBox','adminTeamActions'].forEach(id=>document.getElementById(id).style.display= isRoomAdmin ? 'flex' : 'none');
   if(isRoomAdmin) document.getElementById('pinDisplay').textContent='····';
-  document.getElementById('adminTeamActions').style.display = isRoomAdmin ? 'flex' : 'none';
   document.getElementById('configBtn').style.display = isRoomAdmin ? 'inline-block' : 'none';
   // Auto-register roomCode index for existing rooms (admin only)
   if(isRoomAdmin && currentRoomData.roomCode && currentRoomId){
@@ -574,8 +573,7 @@ function applyRoomHeader(){
     setTimeout(renderConvocatoria, 300);
   }
   // Header: admin ve su avatar, invitado ve botones de registro/login
-  document.getElementById('headerAdminBar').style.display = isRoomAdmin ? 'flex' : 'none';
-  document.getElementById('headerGuestBar').style.display = isRoomAdmin ? 'none' : 'flex';
+  [['headerAdminBar','flex','none'],['headerGuestBar','none','flex']].forEach(([id,yes,no])=>document.getElementById(id).style.display=isRoomAdmin?yes:no);
   // Show edit button for guests who already have a session
   updateGuestHeaderBtns();
   // Actualizar avatar admin
@@ -795,8 +793,7 @@ function openRoomConfig(){
   // Adapt modal to room type
   document.getElementById('cfgPurposeLabel').textContent = isConv ? 'Nombre / descripción' : 'Propósito del sorteo';
   document.getElementById('cfgModalSub').textContent = isConv ? 'Configurá los datos de la convocatoria' : 'Los cambios aplican al próximo sorteo';
-  document.getElementById('cfgSorteoSection1').style.display = isConv ? 'none' : '';
-  document.getElementById('cfgSorteoSection2').style.display = isConv ? 'none' : '';
+  ['cfgSorteoSection1','cfgSorteoSection2'].forEach(id=>document.getElementById(id).style.display= isConv ? 'none' : '');
   // Pre-fill current values
   document.getElementById('cfgPurpose').value = currentRoomData.purpose || '';
   document.getElementById('cfgMin').value = currentRoomData.minParticipants || 2;
@@ -951,7 +948,7 @@ function openEditProfile(){
     document.getElementById('removePhotoBtn').style.display = 'block';
   } else {
     prev.innerHTML = m.emoji||'👤';
-    prev.style.background = m.color||'#6c63ff';
+    Object.assign(prev.style, {background: m.color||'#6c63ff'});
     document.getElementById('removePhotoBtn').style.display = 'none';
   }
   // Init emoji section based on current photo state
@@ -981,7 +978,7 @@ function previewEditAvatar(e){
     editSelectedEmoji = null;
     const prev = document.getElementById('editAvatarPreview');
     prev.innerHTML = `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-    prev.style.background = '';
+    Object.assign(prev.style, {background: ''});
     document.getElementById('removePhotoBtn').style.display = 'block';
     onPhotoLoaded('edit');
   };
@@ -995,7 +992,7 @@ function removeEditAvatar(){
   const m = state.members.find(m => m.fbKey === myMemberId);
   const prev = document.getElementById('editAvatarPreview');
   prev.innerHTML = m?.emoji||'👤';
-  prev.style.background = m?.color||'#6c63ff';
+  Object.assign(prev.style, {background: m?.color||'#6c63ff'});
   document.getElementById('removePhotoBtn').style.display = 'none';
   onPhotoRemoved('edit');
   setTimeout(()=>buildEmojiPicker('editEmojiGrid'), 100);
@@ -1210,7 +1207,7 @@ window.toggleCalDay=toggleCalDay;
 function updateSelectedPreview(){
   const prev=document.getElementById('selectedDatesPreview');
   if(!prev) return;
-  const sorted=[...calSelectedDates].sort();
+  const sorted=[...calSelectedDates].toSorted();
   prev.textContent=sorted.length?`${sorted.length} fecha${sorted.length!==1?'s':''} seleccionada${sorted.length!==1?'s':''}`:' ';
 }
 
@@ -1222,7 +1219,7 @@ async function saveEvent(){
   const title=document.getElementById('eventTitleInput').value.trim();
   if(!title){ showToast('Ingresa un nombre para el evento'); return; }
   if(calSelectedDates.size===0){ showToast('Selecciona al menos una fecha'); return; }
-  const dates=[...calSelectedDates].sort();
+  const dates=[...calSelectedDates].toSorted();
   await fbAdd('events/'+currentRoomId,{title,dates,createdAt:Date.now()});
   closeAddEvent();
   showToast(`✓ Evento "${title}" creado con ${dates.length} fecha${dates.length!==1?'s':''}`);
@@ -1428,9 +1425,7 @@ async function enterWithGoogle(){
   isRoomAdmin = false;
   document.getElementById('appView').style.display='block';
   document.getElementById('currentDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  document.getElementById('pinBox').style.display='none';
-  document.getElementById('adminTeamActions').style.display='none';
-  document.getElementById('headerAdminBar').style.display='none';
+  ['pinBox','adminTeamActions','headerAdminBar'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('headerGuestBar').style.display='flex';
   // Aplicar header (NO recalcula isRoomAdmin porque currentRoomData.ownerUid != currentUser.uid)
   applyRoomHeader();
@@ -1485,8 +1480,7 @@ function enterWithCustomProfile(){
   selectedMemberId = null;
   hideAll();
   document.getElementById('registerView').style.display='block';
-  document.getElementById('pinStep').style.display='none';
-  document.getElementById('regSuccess').style.display='none';
+  ['pinStep','regSuccess'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('actionStep').style.display='block';
   // Show only "new user" tab
   switchRegTab('new', document.querySelectorAll('.reg-tab')[0]);
@@ -1506,8 +1500,7 @@ async function enterWithExistingProfile(){
   selectedMemberId = null;
   hideAll();
   document.getElementById('registerView').style.display='block';
-  document.getElementById('pinStep').style.display='none';
-  document.getElementById('regSuccess').style.display='none';
+  ['pinStep','regSuccess'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('actionStep').style.display='block';
   // Show only "existing" tab
   switchRegTab('existing', document.querySelectorAll('.reg-tab')[1]);
@@ -1639,8 +1632,7 @@ function buildEmojiPicker(gridId, onSelect){
 function selectPickerEmoji(emoji, gridId){
   const grid = document.getElementById(gridId);
   if(grid) grid.querySelectorAll('div').forEach(d=>{
-    d.style.borderColor = d.textContent===emoji ? 'var(--accent)' : 'var(--border)';
-    d.style.background = d.textContent===emoji ? 'rgba(108,99,255,.15)' : '';
+    Object.assign(d.style, {borderColor: d.textContent===emoji ? 'var(--accent)' : 'var(--border)', background: d.textContent===emoji ? 'rgba(108,99,255,.15)' : ''});
   });
   if(gridId==='regEmojiGrid') regSelectedEmoji=emoji;
   if(gridId==='adminEmojiGrid') adminSelectedEmoji=emoji;
@@ -1773,11 +1765,8 @@ window.toggleParticipant = toggleParticipant;
 
 function selectAllParticipants(){
   // Select all members except those already assigned today
-  _manualParticipants = new Set(
-    state.members
-      .filter(m=>getMemberStatusBase(m.id,m.fbKey)!=='facilitating_today')
-      .map(m=>m.fbKey)
-  );
+  const _mp=new Set();for(const m of state.members){if(getMemberStatusBase(m.id,m.fbKey)!=='facilitating_today')_mp.add(m.fbKey);}
+  _manualParticipants=_mp;
   refreshParticipantSelector();
   drawWheel(currentAngle);
 }
@@ -1805,10 +1794,10 @@ function getMemberStatusBase(id, fbKey){
   if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='assigned'&&!h.reverted)) return 'assigned_tomorrow';
   if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='unavailable'&&!h.reverted)) return 'unavailable_tomorrow';
   const fd=getRoomFreeDays();
-  for(let i=1;i<=fd;i++){
-    const dayStr=dateOffset(-i);
-    if(state.history.find(h=>h.memberId===id&&h.facilitationDate===dayStr&&h.type==='assigned'&&!h.reverted))
-      return 'free_day'+i;
+  if(fd>0){
+    const assignedDates=new Set();
+    for(const h of state.history){if(h.memberId===id&&h.type==='assigned'&&!h.reverted)assignedDates.add(h.facilitationDate);}
+    for(let i=1;i<=fd;i++){if(assignedDates.has(dateOffset(-i)))return 'free_day'+i;}
   }
   return 'eligible';
 }
@@ -2152,31 +2141,26 @@ async function renderCardsDeck(eligible, winnerFbKey){
       const spread=28+Math.random()*20;
       const lift=-18-Math.random()*16;
       const rot=(Math.random()-0.5)*16*side;
-      card.style.transition='transform 0.11s ease-out';
-      card.style.transform=`translate(calc(-50% + ${side*spread}px), calc(-50% + ${lift}px)) rotate(${rot}deg) scale(1.04)`;
+      Object.assign(card.style, {transition:'transform 0.11s ease-out', transform:`translate(calc(-50% + ${side*spread}px), calc(-50% + ${lift}px)) rotate(${rot}deg) scale(1.04)`});
     });
     await sleep(125);
     // Riffle back
     pile.forEach(card=>{
       const yJ=(Math.random()-0.5)*4;
-      card.style.transition='transform 0.1s ease-in';
-      card.style.transform=`translate(-50%, calc(-50% + ${yJ}px)) rotate(${(Math.random()-0.5)*3}deg)`;
+      Object.assign(card.style, {transition:'transform 0.1s ease-in', transform:`translate(-50%, calc(-50% + ${yJ}px)) rotate(${(Math.random()-0.5)*3}deg)`});
     });
     await sleep(115);
   }
   // Settle
   pile.forEach(card=>{
-    card.style.transition='transform 0.15s ease';
-    card.style.transform='translate(-50%,-50%) rotate(0deg)';
+    Object.assign(card.style, {transition:'transform 0.15s ease', transform:'translate(-50%,-50%) rotate(0deg)'});
   });
   await sleep(200);
 
   // ── PHASE 3: FAN out one by one ──
   for(let i=0;i<n;i++){
     const pos=positions[i];
-    pile[i].style.transition='transform 0.35s cubic-bezier(0.34,1.4,0.64,1)';
-    pile[i].style.transform=`translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) rotate(${pos.r}deg)`;
-    pile[i].style.zIndex=String(i+1);
+    Object.assign(pile[i].style, {transition:'transform 0.35s cubic-bezier(0.34,1.4,0.64,1)', transform:`translate(calc(-50% + ${pos.x}px), calc(-50% + ${pos.y}px)) rotate(${pos.r}deg)`, zIndex:String(i+1)});
     // Deal sound
     try{
       const ac=new(window.AudioContext||window.webkitAudioContext)();
@@ -2208,12 +2192,10 @@ async function flipCardAsync(fbKey, wm, deck){
   const px=parseFloat(card.dataset.px||'0');
   const py=parseFloat(card.dataset.py||'0');
   // Lift
-  card.style.transition='transform 0.18s ease';
-  card.style.transform=`translate(calc(-50% + ${px}px), calc(-68% + ${py}px)) scale(1.08)`;
+  Object.assign(card.style, {transition:'transform 0.18s ease', transform:`translate(calc(-50% + ${px}px), calc(-68% + ${py}px)) scale(1.08)`});
   await sleep(200);
   // Fold
-  card.style.transition='transform 0.14s ease-in';
-  card.style.transform=`translate(calc(-50% + ${px}px), calc(-68% + ${py}px)) scaleX(0)`;
+  Object.assign(card.style, {transition:'transform 0.14s ease-in', transform:`translate(calc(-50% + ${px}px), calc(-68% + ${py}px)) scaleX(0)`});
   await sleep(160);
   // Reveal
   card.classList.remove('face-down'); card.classList.add('winner-card');
@@ -2222,13 +2204,10 @@ async function flipCardAsync(fbKey, wm, deck){
     :`<div class="card-member-av" style="width:52px;height:52px;font-size:24px;background:${wm.color||'#6c63ff'}">${wm.emoji||'👤'}</div>`;
   card.innerHTML=`<div class="winner-crown">👑</div>${av}<div class="card-member-name">${wm.name}</div>`;
   // Unfold
-  card.style.transition='transform 0.18s ease-out';
-  card.style.transform=`translate(calc(-50% + ${px}px), calc(-68% + ${py}px)) scaleX(1)`;
+  Object.assign(card.style, {transition:'transform 0.18s ease-out', transform:`translate(calc(-50% + ${px}px), calc(-68% + ${py}px)) scaleX(1)`});
   await sleep(200);
   // Rise
-  card.style.transition='all 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-  card.style.transform=`translate(calc(-50% + ${px}px), calc(-108% + ${py}px)) scale(1.38)`;
-  card.style.zIndex='20';
+  Object.assign(card.style, {transition:'all 0.5s cubic-bezier(0.34,1.56,0.64,1)', transform:`translate(calc(-50% + ${px}px), calc(-108% + ${py}px)) scale(1.38)`, zIndex:'20'});
   await sleep(550);
 }
 
@@ -2259,8 +2238,7 @@ function renderSlotsReels(eligible){
   const track=document.getElementById('slotReelTrack');
   if(!track) return;
   track.innerHTML=slotShuffled(eligible).map(m=>slotItemHtml(m)).join('');
-  track.style.transition='none';
-  track.style.top='0px';
+  Object.assign(track.style, {transition:'none', top:'0px'});
   const result=document.getElementById('slotMachineResult');
   if(result) result.textContent='● ● ●';
   const flash=document.getElementById('slotWinFlash');
@@ -2277,21 +2255,17 @@ function stopSlotsOnWinner(winnerFbKey, eligible){
   const {items,winnerAt}=buildSlotReel(eligible,winnerIdx>=0?winnerIdx:0);
   const ITEM_H=40;
   track.innerHTML=items.map(m=>slotItemHtml(m)).join('');
-  track.style.transition='none';
-  track.style.top='0px';
+  Object.assign(track.style, {transition:'none', top:'0px'});
   const targetTop=-(winnerAt*ITEM_H-40);
   // Phase 1: fast
   requestAnimationFrame(()=>{
-    track.style.transition='top 0.8s linear';
-    track.style.top=`${-eligible.length*ITEM_H}px`;
+    Object.assign(track.style, {transition:'top 0.8s linear', top:`${-eligible.length*ITEM_H}px`});
     setTimeout(()=>{
       // Phase 2: medium
-      track.style.transition='top 0.8s ease-in';
-      track.style.top=`${-eligible.length*2*ITEM_H}px`;
+      Object.assign(track.style, {transition:'top 0.8s ease-in', top:`${-eligible.length*2*ITEM_H}px`});
       setTimeout(()=>{
         // Phase 3: ease-out to winner
-        track.style.transition='top 2.2s cubic-bezier(0.22,1,0.36,1)';
-        track.style.top=`${targetTop}px`;
+        Object.assign(track.style, {transition:'top 2.2s cubic-bezier(0.22,1,0.36,1)', top:`${targetTop}px`});
         setTimeout(()=>{
           if(result){ result.textContent='🏆 ¡'+winner.name+'!'; result.style.color='#FFD93D'; }
           if(flash){
@@ -2558,10 +2532,9 @@ async function fbRemove(path){setSyncStatus('syncing');await remove(ref(db,path)
 // ===== REGISTER VIEW =====
 function showRegisterView(roomId){
   regRoomId=roomId; regAvatarData=null; selectedMemberId=null;
-  createStars(); hideAll(); document.getElementById('registerView').style.display='block';
-  document.getElementById('pinStep').style.display='block';
-  document.getElementById('actionStep').style.display='none';
-  document.getElementById('regSuccess').style.display='none';
+  createStars(); hideAll();
+  ['registerView','pinStep'].forEach(id=>document.getElementById(id).style.display='block');
+  ['actionStep','regSuccess'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('pinInput').value='';
   document.getElementById('pinError').style.display='none';
   document.getElementById('regRoomSubtitle').textContent='Cargando sala...';
@@ -2623,8 +2596,7 @@ function verifyPin(){
   }
   if(!inputPin){ showToast('Ingresa el PIN'); return; }
   if(inputPin===String(regRoomData.pin)){
-    document.getElementById('pinStep').style.display='none';
-    document.getElementById('pinError').style.display='none';
+    ['pinStep','pinError'].forEach(id=>document.getElementById(id).style.display='none');
     // Si tiene Google, ofrecer elección de perfil
     if(currentUser){
       _profileChoiceRoomId = regRoomId;
@@ -2734,8 +2706,7 @@ async function loginExisting(){
 window.loginExisting=loginExisting;
 
 function showRegSuccess(name,msg){
-  document.getElementById('actionStep').style.display='none';
-  document.getElementById('regSuccess').style.display='block';
+  [['actionStep','none'],['regSuccess','block']].forEach(([id,v])=>document.getElementById(id).style.display=v);
   document.getElementById('regSuccessName').textContent=name;
   document.getElementById('regSuccessMsg').textContent=msg;
   launchConfetti();
@@ -2753,9 +2724,7 @@ function goToRoomFromReg(){
   document.getElementById('currentDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   // Ocultar elementos de admin para usuarios no logueados
   isRoomAdmin = false;
-  document.getElementById('pinBox').style.display='none';
-  document.getElementById('adminTeamActions').style.display='none';
-  document.getElementById('headerAdminBar').style.display='none';
+  ['pinBox','adminTeamActions','headerAdminBar'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('headerGuestBar').style.display='flex';
   // Aplicar header de sala
   if(currentRoomData) applyRoomHeader();
@@ -2808,10 +2777,10 @@ function getMemberStatus(id, fbKey){
   if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='unavailable'&&!h.reverted)) return 'unavailable_tomorrow';
   // Días libres dinámicos según configuración de la sala
   const fd=getRoomFreeDays();
-  for(let i=1;i<=fd;i++){
-    const dayStr=dateOffset(-i);
-    if(state.history.find(h=>h.memberId===id&&h.facilitationDate===dayStr&&h.type==='assigned'&&!h.reverted))
-      return 'free_day'+i;
+  if(fd>0){
+    const assignedDates=new Set();
+    for(const h of state.history){if(h.memberId===id&&h.type==='assigned'&&!h.reverted)assignedDates.add(h.facilitationDate);}
+    for(let i=1;i<=fd;i++){if(assignedDates.has(dateOffset(-i)))return 'free_day'+i;}
   }
   return 'eligible';
 }
@@ -3081,8 +3050,7 @@ function spinRoulette(){
   }
   // Start background music
   startBgMusic(getRoomMusicType());
-  document.getElementById('availSection').style.display='none';
-  document.getElementById('confirmedMsg').style.display='none';
+  ['availSection','confirmedMsg'].forEach(id=>document.getElementById(id).style.display='none');
   currentWinner=null;
 
   _wheelLastEligible = [...eligible]; // store snapshot before Firebase write
@@ -3141,8 +3109,7 @@ function playRemoteSpin(data){
   spinning=true;
   document.getElementById('spinBtn').disabled=true;
   document.getElementById('winnerCard').classList.remove('show');
-  document.getElementById('availSection').style.display='none';
-  document.getElementById('confirmedMsg').style.display='none';
+  ['availSection','confirmedMsg'].forEach(id=>document.getElementById(id).style.display='none');
 
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
   const startA=data.startAngle, totalA=data.totalAngle, dur=data.duration, startTs=data.startTs;
@@ -3375,8 +3342,7 @@ async function revertAssignment(fbKey){
   _wheelLastEligible=null;
   currentWinner=null;
   document.getElementById('winnerCard').classList.remove('show');
-  document.getElementById('confirmedMsg').style.display='none';
-  document.getElementById('availSection').style.display='none';
+  ['confirmedMsg','availSection'].forEach(id=>document.getElementById(id).style.display='none');
   // Re-enable spin button immediately
   const sb=document.getElementById('spinBtn');
   if(sb){sb.disabled=false;sb.style.opacity='1';}
@@ -3438,7 +3404,7 @@ function renderMemberStatus(){
 function renderTeam(){
   const grid=document.getElementById('teamGrid');if(!grid)return;
   if(!state.members.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="big">👥</div>Sin integrantes aún</div>';return;}
-  const tc={};state.history.filter(h=>h.type==='assigned'&&!h.reverted).forEach(h=>{tc[h.memberId]=(tc[h.memberId]||0)+1;});
+  const tc={};for(const h of state.history){if(h.type==='assigned'&&!h.reverted)tc[h.memberId]=(tc[h.memberId]||0)+1;}
   grid.innerHTML=state.members.map(m=>{
     const times=tc[m.id]||0,online=isMemberOnline(m.fbKey);
     const av=m.image?`<div class="team-avatar"><img src="${m.image}" alt="${m.name}"><div class="${online?'team-online-dot':'team-offline-dot'}"></div></div>`:`<div class="team-avatar" style="background:${m.color||'#6c63ff'};font-size:20px">${m.emoji||'👤'}<div class="${online?'team-online-dot':'team-offline-dot'}"></div></div>`;

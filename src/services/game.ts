@@ -6,7 +6,7 @@ import { fbAdd } from './db'
 import { db } from './firebase'
 import { ref, set } from 'firebase/database'
 import type { Member, HistoryEntry, GameMode, RoomMeta } from '../types'
-import { today, fmtDate, getTaskDueDate, availableAgainDate, getRoomFreeDays } from '../utils/dates'
+import { today, fmtDate, getTaskDueDate } from '../utils/dates'
 
 // ---- Selección de ganador ----
 
@@ -69,35 +69,6 @@ export async function revertWinner(roomId: string, entryKey: string): Promise<vo
 export async function setSpinningState(roomId: string, spinning: boolean): Promise<void> {
   await set(ref(db, `roulette/${roomId}`), { spinning }).catch(() => {})
 }
-
-// ---- Helpers de presentación (sin DOM) ----
-
-/**
- * Construye el mensaje de confirmación del ganador.
- * Devuelve strings que el componente puede renderizar.
- */
-export function buildWinnerMessage(params: {
-  winner: Member
-  facilitationDate: string
-  freeDays: number
-}): { main: string; freedayNote: string | null } {
-  const { winner, facilitationDate, freeDays } = params
-  const main = `✓ ${winner.name} fue asignado para el ${fmtDate(facilitationDate)}.`
-
-  if (freeDays > 0) {
-    const availDate = availableAgainDate(facilitationDate, freeDays)
-    const days = freeDays === 1 ? '1 día' : `${freeDays} días`
-    return {
-      main,
-      freedayNote: `No participará los próximos ${days}. Volverá el ${fmtDate(availDate)}.`,
-    }
-  }
-
-  return { main, freedayNote: null }
-}
-
-/** Devuelve los días libres de la sala o 2 por defecto. */
-export { getRoomFreeDays }
 
 // ---- No disponible ----
 
