@@ -559,6 +559,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .conv-cal-day.sel{background:var(--accent);border-color:var(--accent);color:white;font-weight:700;}
 .conv-cal-day.has-event::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--accent2);}
 .conv-cal-day.empty{background:transparent;border-color:transparent;cursor:default;}
+.conv-cal-day.past{opacity:.3;cursor:default;pointer-events:none;}
 .conv-cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px;}
 .conv-cal-dayname{font-size:10px;color:var(--text3);text-align:center;padding:4px 0;}
 .conv-cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -2543,7 +2544,7 @@ function renderEventCard(eid, ev){
     return `<div class="conv-date-row">
       <div class="conv-date-info">
         <div class="conv-date-label">${fmtDate(d)}</div>
-        <div class="conv-date-sub">${d}</div>
+        <div class="conv-date-sub">${d.slice(8,10)}/${d.slice(5,7)}/${d.slice(0,4)}</div>
       </div>
       <div class="conv-date-counts">
         <span class="conv-count"><span class="conv-count-dot" style="background:var(--success)"></span>${confirmed.length}</span>
@@ -2626,13 +2627,16 @@ function renderCalendar(){
   const firstDay=new Date(yr,mo,1).getDay();
   const offset=(firstDay+6)%7; // Monday=0
   const daysInMonth=new Date(yr,mo+1,0).getDate();
+  const todayStr=today();
   const grid=document.getElementById('calGrid');
   let html='';
   for(let i=0;i<offset;i++) html+=`<div class="conv-cal-day empty"></div>`;
   for(let d=1;d<=daysInMonth;d++){
     const dateStr=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const sel=calSelectedDates.has(dateStr);
-    html+=`<div class="conv-cal-day${sel?' sel':''}" onclick="toggleCalDay('${dateStr}',this)">${d}</div>`;
+    const isPast=dateStr<todayStr;
+    if(isPast) html+=`<div class="conv-cal-day past">${d}</div>`;
+    else html+=`<div class="conv-cal-day${sel?' sel':''}" onclick="toggleCalDay('${dateStr}',this)">${d}</div>`;
   }
   grid.innerHTML=html;
   updateSelectedPreview();
@@ -2652,7 +2656,13 @@ function updateSelectedPreview(){
   prev.textContent=sorted.length?`${sorted.length} fecha${sorted.length!==1?'s':''} seleccionada${sorted.length!==1?'s':''}`:' ';
 }
 
-function calPrev(){ calCurrentDate.setMonth(calCurrentDate.getMonth()-1); renderCalendar(); }
+function calPrev(){
+  const prev=new Date(calCurrentDate);
+  prev.setDate(1);
+  prev.setMonth(prev.getMonth()-1);
+  const now=new Date(); now.setDate(1); now.setHours(0,0,0,0);
+  if(prev>=now){ calCurrentDate.setMonth(calCurrentDate.getMonth()-1); renderCalendar(); }
+}
 function calNext(){ calCurrentDate.setMonth(calCurrentDate.getMonth()+1); renderCalendar(); }
 window.calPrev=calPrev; window.calNext=calNext;
 
