@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Squadly · Coordinación de equipos</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%236c63ff'/><circle cx='22' cy='26' r='7' fill='white' opacity='0.9'/><circle cx='42' cy='26' r='7' fill='white' opacity='0.7'/><circle cx='32' cy='40' r='7' fill='white' opacity='0.5'/><path d='M18 50 Q32 40 46 50' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' opacity='0.8'/></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%236c63ff'/><circle cx='22' cy='26' r='7' fill='white' opacity='0.9'/><circle cx='42' cy='26' r='7' fill='white' opacity='0.7'/><circle cx='32' cy='40' r='7' fill='white' opacity='0.5'/><path d='M18 50 Q32 40 46 50' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' opacity='0.8'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%236c63ff'/><circle cx='22' cy='26' r='7' fill='white' opacity='0.9'/><circle cx='42' cy='26' r='7' fill='white' opacity='0.7'/><circle cx='32' cy='40' r='7' fill='white' opacity='0.5'/><path d='M18 50 Q32 58 46 50' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' opacity='0.8'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%236c63ff'/><circle cx='22' cy='26' r='7' fill='white' opacity='0.9'/><circle cx='42' cy='26' r='7' fill='white' opacity='0.7'/><circle cx='32' cy='40' r='7' fill='white' opacity='0.5'/><path d='M18 50 Q32 58 46 50' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' opacity='0.8'/></svg>">
 <style>
 :root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--surface:#1e1e2e;--surface2:#252538;--border:rgba(120,120,200,0.15);--border2:rgba(120,120,200,0.3);--accent:#6c63ff;--accent2:#a78bfa;--accent3:#f59e0b;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;--gold:#ffd700;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -32,6 +32,14 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .google-btn:hover{opacity:.9;}
 .google-btn svg{width:20px;height:20px;flex-shrink:0;}
 .auth-note{font-size:11px;color:var(--text3);margin-top:16px;}
+.auth-divider{font-size:12px;color:var(--text3);margin:12px 0;position:relative;text-align:center;}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:calc(50% - 16px);height:1px;background:var(--border);}
+.auth-divider::before{left:0;}.auth-divider::after{right:0;}
+.join-btn{width:100%;padding:13px 20px;background:transparent;border:1px solid var(--border);border-radius:12px;font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .2s;}
+.join-btn:hover{border-color:var(--accent);color:var(--accent);}
+.room-code-input{width:100%;padding:14px 16px;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-size:24px;font-weight:700;letter-spacing:10px;text-align:center;text-transform:uppercase;font-family:'Courier New',monospace;outline:none;transition:border-color .2s;margin-bottom:8px;}
+.room-code-input:focus{border-color:var(--accent);}
+.room-code-input::placeholder{letter-spacing:6px;font-size:20px;color:var(--text3);font-weight:400;}
 
 /* USER BAR */
 .user-bar{display:flex;align-items:center;gap:10px;}
@@ -709,14 +717,21 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <div id="authPage" style="display:none">
   <div class="auth-page">
     <div class="auth-card">
-      <div class="auth-logo"><svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#6c63ff"/><circle cx="22" cy="26" r="7" fill="white" opacity="0.9"/><circle cx="42" cy="26" r="7" fill="white" opacity="0.7"/><circle cx="32" cy="40" r="7" fill="white" opacity="0.5"/><path d="M18 50 Q32 40 46 50" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/></svg></div>
+      <div class="auth-logo"><svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#6c63ff"/><circle cx="22" cy="26" r="7" fill="white" opacity="0.9"/><circle cx="42" cy="26" r="7" fill="white" opacity="0.7"/><circle cx="32" cy="40" r="7" fill="white" opacity="0.5"/><path d="M18 50 Q32 58 46 50" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/></svg></div>
       <h1>Squad<span>ly</span></h1>
       <p>Coordiná tu equipo: sorteos, convocatorias y más. Iniciá sesión para crear y gestionar tus salas.</p>
       <button class="google-btn" onclick="signInWithGoogle()">
         <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
         Continuar con Google
       </button>
-      <div class="auth-note">Tu cuenta de Google solo se usa para identificarte como creador de salas.</div>
+      <div class="auth-divider">o</div>
+      <button class="join-btn" onclick="toggleJoinForm()">Unirse a una sala</button>
+      <div id="joinLinkForm" style="display:none;margin-top:12px;">
+        <input type="text" id="joinLinkInput" class="room-code-input" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()">
+        <div id="joinLinkError" style="display:none;font-size:12px;color:var(--danger);margin-bottom:8px;"></div>
+        <button class="register-btn" onclick="handleJoinLink()" style="width:100%;">Continuar →</button>
+      </div>
+      <div class="auth-note">Para crear o administrar salas iniciá sesión con Google.</div>
     </div>
   </div>
 </div>
@@ -726,7 +741,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div class="lobby">
     <div class="lobby-header">
       <div class="lobby-logo">
-        <div class="lobby-logo-icon"><svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#6c63ff"/><circle cx="22" cy="26" r="7" fill="white" opacity="0.9"/><circle cx="42" cy="26" r="7" fill="white" opacity="0.7"/><circle cx="32" cy="40" r="7" fill="white" opacity="0.5"/><path d="M18 50 Q32 40 46 50" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/></svg></div>
+        <div class="lobby-logo-icon"><svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><rect width="64" height="64" rx="14" fill="#6c63ff"/><circle cx="22" cy="26" r="7" fill="white" opacity="0.9"/><circle cx="42" cy="26" r="7" fill="white" opacity="0.7"/><circle cx="32" cy="40" r="7" fill="white" opacity="0.5"/><path d="M18 50 Q32 58 46 50" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/></svg></div>
         <h1>Squad<span>ly</span></h1>
       </div>
       <div class="user-bar">
@@ -1449,8 +1464,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <script src="firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, push, onValue, update, remove, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, push, get, onValue, update, remove, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const fbApp = initializeApp(window.firebaseConfig);
 const db = getDatabase(fbApp);
@@ -1478,6 +1493,17 @@ function setSyncStatus(s){
   else if(s==='syncing'){lbl.className='sync-status';lbl.textContent='Sincronizando...';}
   else{lbl.className='sync-status error';lbl.textContent='✕ Sin conexión';}
 }
+
+// ===== TEAMS =====
+function isInTeams(){ return window.parent !== window; }
+if(isInTeams()){
+  const t = document.createElement('script');
+  t.src = 'https://res.cdn.office.net/teams-js/2.22.0/js/MicrosoftTeams.min.js';
+  t.onload = () => { microsoftTeams.app.initialize(); };
+  document.head.appendChild(t);
+}
+// Completar redirect post-OAuth si venimos de Teams
+getRedirectResult(auth).catch(()=>{});
 
 // ===== AUTH =====
 onAuthStateChanged(auth, user => {
@@ -1575,16 +1601,62 @@ function showAuthPage(){
 
 async function signInWithGoogle(asParticipant){
   if(asParticipant && regRoomId){
-    // Entrar como participante — guardar roomId para mostrar modal de elección
     localStorage.setItem('dr_pending_join_room', regRoomId);
   } else if(regRoomId){
-    // Entrar como admin
     localStorage.setItem('dr_pending_room', regRoomId);
   }
-  try { await signInWithPopup(auth, provider); }
+  try {
+    if(isInTeams()) await signInWithRedirect(auth, provider);
+    else await signInWithPopup(auth, provider);
+  }
   catch(e){ showToast('Error al iniciar sesión: '+e.message); }
 }
 window.signInWithGoogle = signInWithGoogle;
+
+function toggleJoinForm(){
+  const form = document.getElementById('joinLinkForm');
+  const isVisible = form.style.display !== 'none';
+  form.style.display = isVisible ? 'none' : 'block';
+  if(!isVisible) document.getElementById('joinLinkInput').focus();
+}
+window.toggleJoinForm = toggleJoinForm;
+
+async function handleJoinLink(){
+  const raw = document.getElementById('joinLinkInput').value.trim().toUpperCase();
+  const errEl = document.getElementById('joinLinkError');
+  const btn = document.querySelector('#joinLinkForm .register-btn');
+  errEl.style.display = 'none';
+
+  if(!raw){ errEl.textContent = 'Ingresá el código de sala o el link de invitación.'; errEl.style.display='block'; return; }
+
+  // Detectar si es URL con ?room=
+  const lowerRaw = raw.toLowerCase();
+  if(lowerRaw.includes('room=')){
+    try {
+      const url = new URL(raw.startsWith('HTTP') ? raw : 'https://x.com/?' + raw.split('?')[1]);
+      const roomId = url.searchParams.get('room') || url.searchParams.get('ROOM');
+      if(roomId){ showRegisterView(roomId); return; }
+    } catch {}
+  }
+
+  // Código de 6 caracteres — buscar en roomCodeIndex
+  const code = raw.replace(/[^A-Z0-9]/g,'');
+  if(code.length !== 6){ errEl.textContent = 'El código debe tener 6 caracteres.'; errEl.style.display='block'; return; }
+
+  btn.textContent = 'Buscando...'; btn.disabled = true;
+  try {
+    const snap = await get(ref(db, 'roomCodeIndex/' + code));
+    const roomId = snap.val();
+    if(!roomId){ errEl.textContent = 'No se encontró ninguna sala con ese código. Verificá con el admin.'; errEl.style.display='block'; return; }
+    showRegisterView(roomId);
+  } catch(e) {
+    console.error('roomCodeIndex lookup error:', e);
+    errEl.textContent = 'Error al buscar la sala. Intentá de nuevo.'; errEl.style.display='block';
+  } finally {
+    btn.textContent = 'Continuar →'; btn.disabled = false;
+  }
+}
+window.handleJoinLink = handleJoinLink;
 
 async function signOut(){
   if(currentRoomId && myMemberId) setPresence(currentRoomId, myMemberId, false);
@@ -2901,12 +2973,10 @@ window.enterWithGoogleFromReg = enterWithGoogleFromReg;
 // Called when user clicks Google button WITHOUT being logged in yet
 async function loginWithGoogleAsParticipant(){
   if(!regRoomId){ showToast('Error: sala no encontrada'); return; }
-  // Save room context so after Google login we know where to go
   localStorage.setItem('dr_pending_join_room', regRoomId);
   try {
-    await signInWithPopup(auth, provider);
-    // signInWithPopup triggers onAuthStateChanged which reads dr_pending_join_room
-    // and calls routeToProfileChoice → opens profileChoiceModal
+    if(isInTeams()) await signInWithRedirect(auth, provider);
+    else await signInWithPopup(auth, provider);
   } catch(e){
     localStorage.removeItem('dr_pending_join_room');
     if(e.code !== 'auth/popup-closed-by-user'){

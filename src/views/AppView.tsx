@@ -23,7 +23,7 @@ type Tab = 'ruleta' | 'equipo' | 'historial'
 
 interface Props {
   roomId: string
-  user: User
+  user: User | null
   isAdmin: boolean
   onBack: () => void
 }
@@ -37,8 +37,8 @@ export function AppView({ roomId, user, isAdmin, onBack }: Props) {
   // Resolver memberId desde memberLinks si no hay sesion local
   useEffect(() => {
     if (myMemberId) return
-    resolveMemberId(roomId, user.uid).then(id => { if (id) setMyMemberId(id) })
-  }, [roomId, user.uid, myMemberId])
+    resolveMemberId(roomId, user?.uid ?? '').then(id => { if (id) setMyMemberId(id) })
+  }, [roomId, user?.uid, myMemberId])
 
   // Presencia propia: online al montar, offline al desmontar
   useEffect(() => {
@@ -69,6 +69,7 @@ export function AppView({ roomId, user, isAdmin, onBack }: Props) {
         isAdmin={isAdmin}
         onBack={onBack}
         onOpenConfig={isAdmin ? () => setShowConfig(true) : undefined}
+        onSignOut={user ? () => signOut() : onBack}
       />
 
       {isAdmin && roomData.pin && <PinBox pin={roomData.pin} />}
@@ -95,7 +96,7 @@ export function AppView({ roomId, user, isAdmin, onBack }: Props) {
 
       {showConfig && isAdmin && (
         <RoomConfigModal
-          ownerUid={user.uid}
+          ownerUid={user?.uid ?? ''}
           roomId={roomId}
           roomData={roomData}
           onSaved={() => setShowConfig(false)}
@@ -111,13 +112,14 @@ export function AppView({ roomId, user, isAdmin, onBack }: Props) {
 // ----------------------------------------------------------------
 
 function AppHeader({
-  room, user, isAdmin, onBack, onOpenConfig,
+  room, user, isAdmin, onBack, onOpenConfig, onSignOut,
 }: {
   room: RoomMeta
-  user: User
+  user: User | null
   isAdmin: boolean
   onBack: () => void
   onOpenConfig?: () => void
+  onSignOut: () => void
 }) {
   return (
     <div className="app-header">
@@ -138,12 +140,12 @@ function AppHeader({
             Ajustes
           </button>
         )}
-        {user.photoURL && (
+        {user?.photoURL && (
           <div className="user-avatar">
             <img src={user.photoURL} alt={user.displayName ?? ''} />
           </div>
         )}
-        <button className="logout-btn" onClick={() => signOut()}>Salir</button>
+        <button className="logout-btn" onClick={onSignOut}>Salir</button>
       </div>
     </div>
   )
