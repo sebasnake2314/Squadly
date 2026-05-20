@@ -1612,8 +1612,7 @@ async function signInWithGoogle(asParticipant){
     localStorage.setItem('dr_pending_room', regRoomId);
   }
   try {
-    if(isInTeams()) await signInWithRedirect(auth, provider);
-    else await signInWithPopup(auth, provider);
+    await signInWithPopup(auth, provider);
   }
   catch(e){ showToast('Error al iniciar sesión: '+e.message); }
 }
@@ -1621,8 +1620,7 @@ window.signInWithGoogle = signInWithGoogle;
 
 async function signInWithMicrosoft(){
   try {
-    if(isInTeams()) await signInWithRedirect(auth, microsoftProvider);
-    else await signInWithPopup(auth, microsoftProvider);
+    await signInWithPopup(auth, microsoftProvider);
   }
   catch(e){ showToast('Error al iniciar sesión: '+e.message); }
 }
@@ -2990,8 +2988,7 @@ async function loginWithGoogleAsParticipant(){
   if(!regRoomId){ showToast('Error: sala no encontrada'); return; }
   localStorage.setItem('dr_pending_join_room', regRoomId);
   try {
-    if(isInTeams()) await signInWithRedirect(auth, provider);
-    else await signInWithPopup(auth, provider);
+    await signInWithPopup(auth, provider);
   } catch(e){
     localStorage.removeItem('dr_pending_join_room');
     if(e.code !== 'auth/popup-closed-by-user'){

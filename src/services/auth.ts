@@ -5,7 +5,6 @@
 import {
   onAuthStateChanged,
   signInWithPopup,
-  signInWithRedirect,
   getRedirectResult,
   signOut as fbSignOut,
   type User,
@@ -25,15 +24,13 @@ export function isInTeams(): boolean {
   return window.parent !== window
 }
 
-/** Login con Google. Usa redirect si corre en Teams (popup bloqueado en iframes). */
+/** Login con Google. Siempre usa popup (redirect causa pantalla negra en iframes de Teams). */
 export async function signInWithGoogle(): Promise<void> {
-  if (isInTeams()) { await signInWithRedirect(auth, provider); return }
   await signInWithPopup(auth, provider)
 }
 
-/** Login con Microsoft. Usa redirect si corre en Teams. */
+/** Login con Microsoft. Siempre usa popup. */
 export async function signInWithMicrosoft(): Promise<void> {
-  if (isInTeams()) { await signInWithRedirect(auth, microsoftProvider); return }
   await signInWithPopup(auth, microsoftProvider)
 }
 
