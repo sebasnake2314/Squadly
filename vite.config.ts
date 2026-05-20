@@ -11,6 +11,7 @@ export default defineConfig({
       // index.html (vanilla JS) se copia al dist/ en el deploy script
       input: {
         app: 'app.html',
+        authStart: 'auth-start.html',
       },
     },
   },

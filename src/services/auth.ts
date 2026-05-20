@@ -9,6 +9,7 @@ import {
   signOut as fbSignOut,
   type User,
 } from 'firebase/auth'
+import { authentication as teamsAuth } from '@microsoft/teams-js'
 import { ref, get } from 'firebase/database'
 import { auth, provider, microsoftProvider, db } from './firebase'
 
@@ -24,13 +25,32 @@ export function isInTeams(): boolean {
   return window.parent !== window
 }
 
-/** Login con Google. Siempre usa popup (redirect causa pantalla negra en iframes de Teams). */
+/**
+ * En Teams, window.open() no preserva window.opener, por lo que el flow de popup de
+ * Firebase nunca puede enviar el token de vuelta. En su lugar usamos
+ * authentication.authenticate() del SDK de Teams que abre un popup gestionado y usa
+ * signInWithRedirect en auth-start.html (fuera de iframe, sin restricciones X-Frame-Options).
+ */
+function teamsAuthFlow(providerName: 'google' | 'microsoft'): Promise<void> {
+  const url = `${window.location.origin}/auth-start.html?provider=${providerName}`
+  return new Promise((resolve, reject) => {
+    teamsAuth.authenticate({
+      url,
+      successCallback: () => resolve(),
+      failureCallback: (reason: string) => reject(new Error(reason ?? 'auth failed')),
+    })
+  })
+}
+
+/** Login con Google. En Teams usa el flow de redirect gestionado por Teams SDK. */
 export async function signInWithGoogle(): Promise<void> {
+  if (isInTeams()) { await teamsAuthFlow('google'); return }
   await signInWithPopup(auth, provider)
 }
 
-/** Login con Microsoft. Siempre usa popup. */
+/** Login con Microsoft. En Teams usa el flow de redirect gestionado por Teams SDK. */
 export async function signInWithMicrosoft(): Promise<void> {
+  if (isInTeams()) { await teamsAuthFlow('microsoft'); return }
   await signInWithPopup(auth, microsoftProvider)
 }
 

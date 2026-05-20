@@ -1502,13 +1502,20 @@ function setSyncStatus(s){
 
 // ===== TEAMS =====
 function isInTeams(){ return window.parent !== window; }
+// teamsReady: Promise que resuelve cuando el SDK de Teams está listo.
+// En Teams, window.open() no preserva window.opener, por lo que signInWithPopup
+// nunca puede devolver el token. Usamos authentication.authenticate() del SDK
+// que abre un popup gestionado con flow de redirect en auth-start.html.
+let teamsReady = null;
 if(isInTeams()){
-  const t = document.createElement('script');
-  t.src = 'https://res.cdn.office.net/teams-js/2.22.0/js/MicrosoftTeams.min.js';
-  t.onload = () => { microsoftTeams.app.initialize(); };
-  document.head.appendChild(t);
+  teamsReady = new Promise(resolve => {
+    const t = document.createElement('script');
+    t.src = 'https://res.cdn.office.net/teams-js/2.22.0/js/MicrosoftTeams.min.js';
+    t.onload = () => { microsoftTeams.app.initialize().then(resolve).catch(resolve); };
+    document.head.appendChild(t);
+  });
 }
-// Completar redirect post-OAuth si venimos de Teams
+// Completar redirect post-OAuth si venimos de un flow de redirect directo
 getRedirectResult(auth).catch(()=>{});
 
 // ===== AUTH =====
@@ -1612,17 +1619,27 @@ async function signInWithGoogle(asParticipant){
     localStorage.setItem('dr_pending_room', regRoomId);
   }
   try {
+    if(isInTeams()){
+      if(teamsReady) await teamsReady;
+      await microsoftTeams.authentication.authenticate({ url: window.location.origin+'/auth-start.html?provider=google' });
+      return;
+    }
     await signInWithPopup(auth, provider);
   }
-  catch(e){ showToast('Error al iniciar sesión: '+e.message); }
+  catch(e){ if(e?.errorCode !== 'CancelledByUser') showToast('Error al iniciar sesión: '+(e?.message||e)); }
 }
 window.signInWithGoogle = signInWithGoogle;
 
 async function signInWithMicrosoft(){
   try {
+    if(isInTeams()){
+      if(teamsReady) await teamsReady;
+      await microsoftTeams.authentication.authenticate({ url: window.location.origin+'/auth-start.html?provider=microsoft' });
+      return;
+    }
     await signInWithPopup(auth, microsoftProvider);
   }
-  catch(e){ showToast('Error al iniciar sesión: '+e.message); }
+  catch(e){ if(e?.errorCode !== 'CancelledByUser') showToast('Error al iniciar sesión: '+(e?.message||e)); }
 }
 window.signInWithMicrosoft = signInWithMicrosoft;
 
@@ -2988,11 +3005,16 @@ async function loginWithGoogleAsParticipant(){
   if(!regRoomId){ showToast('Error: sala no encontrada'); return; }
   localStorage.setItem('dr_pending_join_room', regRoomId);
   try {
+    if(isInTeams()){
+      if(teamsReady) await teamsReady;
+      await microsoftTeams.authentication.authenticate({ url: window.location.origin+'/auth-start.html?provider=google' });
+      return;
+    }
     await signInWithPopup(auth, provider);
   } catch(e){
     localStorage.removeItem('dr_pending_join_room');
-    if(e.code !== 'auth/popup-closed-by-user'){
-      showToast('Error al iniciar sesión: ' + e.message);
+    if(e?.errorCode !== 'CancelledByUser' && e?.code !== 'auth/popup-closed-by-user'){
+      showToast('Error al iniciar sesión: ' + (e?.message||e));
     }
   }
 }
