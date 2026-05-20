@@ -28,9 +28,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .auth-card h1{font-size:26px;font-weight:800;margin-bottom:6px;}
 .auth-card h1 span{color:var(--accent2);}
 .auth-card p{font-size:13px;color:var(--text2);margin-bottom:32px;line-height:1.6;}
-.google-btn{width:100%;padding:13px 20px;background:white;border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:15px;font-weight:600;color:#1f1f1f;cursor:pointer;transition:opacity .2s;}
-.google-btn:hover{opacity:.9;}
-.google-btn svg{width:20px;height:20px;flex-shrink:0;}
+.google-btn,.microsoft-btn{width:100%;padding:13px 20px;background:white;border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:15px;font-weight:600;color:#1f1f1f;cursor:pointer;transition:opacity .2s;}
+.google-btn:hover,.microsoft-btn:hover{opacity:.9;}
+.google-btn svg,.microsoft-btn svg{width:20px;height:20px;flex-shrink:0;}
 .auth-note{font-size:11px;color:var(--text3);margin-top:16px;}
 .auth-divider{font-size:12px;color:var(--text3);margin:12px 0;position:relative;text-align:center;}
 .auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:calc(50% - 16px);height:1px;background:var(--border);}
@@ -2800,29 +2800,29 @@ let _profileChoiceRoomData = null;
 
 async function loadParticipantRooms(){
   participantRooms = [];
-  // Buscar todas las sesiones guardadas en localStorage
-  const sessionKeys = Object.keys(localStorage).filter(k=>k.startsWith('dr_session_'));
-  // También buscar en memberLinks/{uid} (vinculaciones Google)
-  let linkedRooms = {};
+  let roomIds = new Set();
   if(currentUser){
+    // Usuario autenticado: usar solo memberLinks (sigue la cuenta, no el navegador)
     const snap = await new Promise(res=>onValue(ref(db,'memberLinks/'+currentUser.uid), res, {onlyOnce:true}));
-    linkedRooms = snap.val()||{};
+    const linkedRooms = snap.val()||{};
+    roomIds = new Set(Object.keys(linkedRooms));
+  } else {
+    // Guest: usar solo localStorage
+    const sessionKeys = Object.keys(localStorage).filter(k=>k.startsWith('dr_session_'));
+    roomIds = new Set(sessionKeys.map(k=>k.replace('dr_session_','')));
   }
-  // Combinar roomIds de ambas fuentes
-  const roomIds = new Set([
-    ...sessionKeys.map(k=>k.replace('dr_session_','')),
-    ...Object.keys(linkedRooms)
-  ]);
   // Filtrar los que ya son salas admin
   const adminRoomIds = new Set(rooms.map(r=>r.fbKey));
   const participantRoomIds = [...roomIds].filter(id=>!adminRoomIds.has(id));
   if(!participantRoomIds.length){
-    document.getElementById('participantRoomsSection').style.display='none';
+    renderParticipantRooms();
     return;
   }
   // Cargar datos de cada sala desde roomsMeta
   const promises = participantRoomIds.map(async roomId=>{
-    const memberId = linkedRooms[roomId] || localStorage.getItem('dr_session_'+roomId);
+    const memberId = currentUser
+      ? (await new Promise(res=>onValue(ref(db,'memberLinks/'+currentUser.uid+'/'+roomId), res, {onlyOnce:true}))).val()
+      : localStorage.getItem('dr_session_'+roomId);
     if(!memberId) return null;
     const [roomSnap, memberSnap] = await Promise.all([
       new Promise(res=>onValue(ref(db,'roomsMeta/'+roomId), res, {onlyOnce:true})),

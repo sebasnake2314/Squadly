@@ -16,7 +16,7 @@ interface Props {
 type Modal = 'create' | 'join' | null
 
 export function LobbyView({ user, onEnterRoom, autoJoinCode }: Props) {
-  const { adminRooms, participantRooms, loading } = useRooms(user)
+  const { adminRooms, participantRooms, loading, loadingParticipants } = useRooms(user)
   const [modal, setModal] = useState<Modal>(autoJoinCode ? 'join' : null)
 
   const today = new Date().toLocaleDateString('es-AR', {
@@ -68,6 +68,26 @@ export function LobbyView({ user, onEnterRoom, autoJoinCode }: Props) {
         </div>
       </div>
 
+      {/* Salas donde participo */}
+      <div className="rooms-section" id="participantRoomsSection">
+        <div className="rooms-section-title">Salas donde participo</div>
+        {loadingParticipants ? (
+          <div style={{ fontSize: 12, color: 'var(--text3)', padding: '12px 0' }}>Cargando…</div>
+        ) : (
+          <div className="rooms-grid">
+            {participantRooms.map(pr => (
+              <ParticipantRoomCard
+                key={pr.roomId}
+                room={pr}
+                onEnter={() => onEnterRoom(pr.roomId, false)}
+                onLeave={() => handleLeaveRoom(pr)}
+              />
+            ))}
+            <JoinRoomCard onClick={() => setModal('join')} />
+          </div>
+        )}
+      </div>
+
       {/* Mis salas */}
       <div className="rooms-section">
         <div className="rooms-section-title">Mis salas</div>
@@ -87,22 +107,6 @@ export function LobbyView({ user, onEnterRoom, autoJoinCode }: Props) {
             <NewRoomCard onClick={() => setModal('create')} />
           </div>
         )}
-      </div>
-
-      {/* Salas donde participo */}
-      <div id="participantRoomsSection">
-        <div className="rooms-section-title">Salas donde participo</div>
-        <div className="rooms-grid">
-          {participantRooms.map(pr => (
-            <ParticipantRoomCard
-              key={pr.roomId}
-              room={pr}
-              onEnter={() => onEnterRoom(pr.roomId, false)}
-              onLeave={() => handleLeaveRoom(pr)}
-            />
-          ))}
-          <JoinRoomCard onClick={() => setModal('join')} />
-        </div>
       </div>
 
       <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center', marginTop: 16 }}>

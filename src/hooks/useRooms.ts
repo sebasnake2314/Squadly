@@ -25,6 +25,7 @@ interface RoomsState {
   adminRooms: AdminRoom[]
   participantRooms: ParticipantRoom[]
   loading: boolean
+  loadingParticipants: boolean
 }
 
 /**
@@ -37,12 +38,13 @@ export function useRooms(user: User | null): RoomsState {
     adminRooms: [],
     participantRooms: [],
     loading: true,
+    loadingParticipants: true,
   })
 
   // ---- Salas admin (suscripción en tiempo real) ----
   useEffect(() => {
     if (!user) {
-      setState({ adminRooms: [], participantRooms: [], loading: false })
+      setState({ adminRooms: [], participantRooms: [], loading: false, loadingParticipants: false })
       return
     }
 
@@ -54,6 +56,7 @@ export function useRooms(user: User | null): RoomsState {
         : []
       setState(prev => ({ ...prev, adminRooms, loading: false }))
       loadParticipantRooms(user, new Set(adminRooms.map(r => r.fbKey)), setState)
+        .catch(() => setState(prev => ({ ...prev, participantRooms: [], loadingParticipants: false })))
     })
 
     return () => unsub()
@@ -69,27 +72,21 @@ async function loadParticipantRooms(
   adminRoomIds: Set<string>,
   setState: React.Dispatch<React.SetStateAction<RoomsState>>,
 ) {
-  // 1. Sesiones guardadas en localStorage
-  const sessionKeys = Object.keys(localStorage).filter(k => k.startsWith('dr_session_'))
-  const sessionRoomIds = sessionKeys.map(k => k.replace('dr_session_', ''))
-
-  // 2. Vinculaciones Google (memberLinks)
+  // Usuario autenticado: solo memberLinks (sigue la cuenta, no el navegador)
+  // Guest: solo localStorage
   const linkedSnap = await get(ref(db, `memberLinks/${user.uid}`))
   const linkedRooms: Record<string, string> = linkedSnap.val() ?? {}
-
-  // 3. Unir fuentes y filtrar las que ya son admin
-  const allIds = new Set([...sessionRoomIds, ...Object.keys(linkedRooms)])
-  const participantIds = [...allIds].filter(id => !adminRoomIds.has(id))
+  const participantIds = Object.keys(linkedRooms).filter(id => !adminRoomIds.has(id))
 
   if (!participantIds.length) {
-    setState(prev => ({ ...prev, participantRooms: [] }))
+    setState(prev => ({ ...prev, participantRooms: [], loadingParticipants: false }))
     return
   }
 
   // 4. Cargar metadata de cada sala en paralelo
   const results = await Promise.all(
     participantIds.map(async roomId => {
-      const memberId = linkedRooms[roomId] ?? localStorage.getItem(`dr_session_${roomId}`)
+      const memberId = linkedRooms[roomId]
       if (!memberId) return null
 
       const [roomSnap, memberSnap] = await Promise.all([
@@ -114,5 +111,5 @@ async function loadParticipantRooms(
   )
 
   const participantRooms = results.filter(Boolean) as ParticipantRoom[]
-  setState(prev => ({ ...prev, participantRooms }))
+  setState(prev => ({ ...prev, participantRooms, loadingParticipants: false }))
 }
