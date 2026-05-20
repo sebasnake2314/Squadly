@@ -4,6 +4,9 @@ node_modules/
 # Build
 dist/
 
+# Teams app package (generado localmente)
+squadly-teams.zip
+
 # Variables de entorno (nunca commitear)
 .env
 .env.local
