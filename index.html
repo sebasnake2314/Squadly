@@ -725,13 +725,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         Continuar con Google
       </button>
       <div class="auth-divider">o</div>
+      <button class="microsoft-btn" onclick="signInWithMicrosoft()">
+        <svg viewBox="0 0 24 24"><path fill="#F25022" d="M1 1h10.5v10.5H1z"/><path fill="#7FBA00" d="M12.5 1H23v10.5H12.5z"/><path fill="#00A4EF" d="M1 12.5h10.5V23H1z"/><path fill="#FFB900" d="M12.5 12.5H23V23H12.5z"/></svg>
+        Continuar con Microsoft
+      </button>
+      <div class="auth-divider">o</div>
       <button class="join-btn" onclick="toggleJoinForm()">Unirse a una sala</button>
       <div id="joinLinkForm" style="display:none;margin-top:12px;">
         <input type="text" id="joinLinkInput" class="room-code-input" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()">
         <div id="joinLinkError" style="display:none;font-size:12px;color:var(--danger);margin-bottom:8px;"></div>
         <button class="register-btn" onclick="handleJoinLink()" style="width:100%;">Continuar →</button>
       </div>
-      <div class="auth-note">Para crear o administrar salas iniciá sesión con Google.</div>
+      <div class="auth-note">Para crear o administrar salas iniciá sesión con Google o Microsoft.</div>
     </div>
   </div>
 </div>
@@ -1465,12 +1470,13 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, push, get, onValue, update, remove, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, OAuthProvider, onAuthStateChanged, signOut as fbSignOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const fbApp = initializeApp(window.firebaseConfig);
 const db = getDatabase(fbApp);
 const auth = getAuth(fbApp);
 const provider = new GoogleAuthProvider();
+const microsoftProvider = new OAuthProvider('microsoft.com');
 
 // ===== STATE =====
 let currentUser = null;       // Firebase Auth user
@@ -1612,6 +1618,15 @@ async function signInWithGoogle(asParticipant){
   catch(e){ showToast('Error al iniciar sesión: '+e.message); }
 }
 window.signInWithGoogle = signInWithGoogle;
+
+async function signInWithMicrosoft(){
+  try {
+    if(isInTeams()) await signInWithRedirect(auth, microsoftProvider);
+    else await signInWithPopup(auth, microsoftProvider);
+  }
+  catch(e){ showToast('Error al iniciar sesión: '+e.message); }
+}
+window.signInWithMicrosoft = signInWithMicrosoft;
 
 function toggleJoinForm(){
   const form = document.getElementById('joinLinkForm');

@@ -43,7 +43,6 @@ export function AuthPage({ onGuestJoin, initialJoinCode }: Props) {
           {loading === 'google' ? 'Entrando...' : 'Continuar con Google'}
         </button>
 
-        {/* Microsoft auth — habilitado cuando Azure AD esté configurado
         <div className="auth-divider">o</div>
         <button className="microsoft-btn" onClick={() => handleSignIn('microsoft')} disabled={loading !== null}>
           <svg viewBox="0 0 24 24">
@@ -54,7 +53,6 @@ export function AuthPage({ onGuestJoin, initialJoinCode }: Props) {
           </svg>
           {loading === 'microsoft' ? 'Entrando...' : 'Continuar con Microsoft'}
         </button>
-        */}
 
         <div className="auth-divider">o</div>
 
@@ -63,7 +61,7 @@ export function AuthPage({ onGuestJoin, initialJoinCode }: Props) {
         </button>
 
         <div className="auth-note">
-          Para crear o administrar salas iniciá sesión con Google.
+          Para crear o administrar salas iniciá sesión con Google o Microsoft.
         </div>
       </div>
 
