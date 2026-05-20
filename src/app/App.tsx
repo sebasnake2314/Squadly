@@ -15,8 +15,8 @@ interface RoomRoute {
 export function App() {
   const { user, loading } = useAuth()
   const [roomRoute, setRoomRoute] = useState<RoomRoute | null>(null)
+  const [guestRoomId, setGuestRoomId] = useState<string | null>(null)
 
-  // Detectar ?join=CODE en la URL para auto-abrir el flujo de union
   const autoJoinCode = useMemo(() => {
     const params = new URLSearchParams(window.location.search)
     return params.get('join')?.toUpperCase() ?? undefined
@@ -30,7 +30,26 @@ export function App() {
     )
   }
 
-  if (!user) return <AuthPage />
+  // Guest entrando a una sala sin login
+  if (!user && guestRoomId) {
+    return (
+      <AppView
+        roomId={guestRoomId}
+        user={null}
+        isAdmin={false}
+        onBack={() => setGuestRoomId(null)}
+      />
+    )
+  }
+
+  if (!user) {
+    return (
+      <AuthPage
+        onGuestJoin={(roomId) => setGuestRoomId(roomId)}
+        initialJoinCode={autoJoinCode}
+      />
+    )
+  }
 
   if (roomRoute) {
     return (

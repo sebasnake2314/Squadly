@@ -5,7 +5,7 @@ export function SquadlyLogo({ size = 28 }: { size?: number }) {
       <circle cx="22" cy="26" r="7" fill="white" opacity="0.9" />
       <circle cx="42" cy="26" r="7" fill="white" opacity="0.7" />
       <circle cx="32" cy="40" r="7" fill="white" opacity="0.5" />
-      <path d="M18 50 Q32 40 46 50" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+      <path d="M18 50 Q32 58 46 50" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
     </svg>
   )
 }

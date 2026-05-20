@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.16",
+  "version": "1.0.0",
+  "id": "f0f16bbf-23ba-4b9d-a81b-6eedf1d7a60d",
+  "packageName": "com.squadly.app",
+  "developer": {
+    "name": "Squadly",
+    "websiteUrl": "https://squadly.pages.dev",
+    "privacyUrl": "https://squadly.pages.dev/guide.html",
+    "termsOfUseUrl": "https://squadly.pages.dev/guide.html"
+  },
+  "icons": {
+    "color": "icon-color.png",
+    "outline": "icon-outline.png"
+  },
+  "name": {
+    "short": "Squadly",
+    "full": "Squadly — Sorteos de facilitadores"
+  },
+  "description": {
+    "short": "Sorteos para dailys de equipo",
+    "full": "Squadly te permite sortear al facilitador de tu daily standup usando modos de juego: ruleta, cartas, slots y bomba. Creá salas, invitá a tu equipo y gestioná ausencias con facilidad."
+  },
+  "accentColor": "#6c63ff",
+  "staticTabs": [
+    {
+      "entityId": "squadly-app",
+      "name": "Squadly",
+      "contentUrl": "https://squadly.pages.dev/",
+      "websiteUrl": "https://squadly.pages.dev/",
+      "scopes": ["personal", "team", "groupchat"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "squadly.pages.dev",
+    "daily-roulette-15d78.firebaseapp.com"
+  ]
+}

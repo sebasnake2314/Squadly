@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getDatabase } from 'firebase/database'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
+import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,4 +15,5 @@ const firebaseConfig = {
 const fbApp           = initializeApp(firebaseConfig)
 export const db       = getDatabase(fbApp)
 export const auth     = getAuth(fbApp)
-export const provider = new GoogleAuthProvider()
+export const provider          = new GoogleAuthProvider()
+export const microsoftProvider = new OAuthProvider('microsoft.com')

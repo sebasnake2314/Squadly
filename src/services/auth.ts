@@ -5,11 +5,13 @@
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as fbSignOut,
   type User,
 } from 'firebase/auth'
 import { ref, get } from 'firebase/database'
-import { auth, provider, db } from './firebase'
+import { auth, provider, microsoftProvider, db } from './firebase'
 
 export type AuthChangeCallback = (user: User | null) => void
 
@@ -18,9 +20,26 @@ export function subscribeToAuthChanges(callback: AuthChangeCallback): () => void
   return onAuthStateChanged(auth, callback)
 }
 
-/** Login con Google popup. Lanza error si falla. */
+/** Devuelve true si la app corre embebida en un iframe (ej. Microsoft Teams). */
+export function isInTeams(): boolean {
+  return window.parent !== window
+}
+
+/** Login con Google. Usa redirect si corre en Teams (popup bloqueado en iframes). */
 export async function signInWithGoogle(): Promise<void> {
+  if (isInTeams()) { await signInWithRedirect(auth, provider); return }
   await signInWithPopup(auth, provider)
+}
+
+/** Login con Microsoft. Usa redirect si corre en Teams. */
+export async function signInWithMicrosoft(): Promise<void> {
+  if (isInTeams()) { await signInWithRedirect(auth, microsoftProvider); return }
+  await signInWithPopup(auth, microsoftProvider)
+}
+
+/** Completa el flow de redirect post-OAuth. Debe llamarse al iniciar la app. */
+export async function handleRedirectResult(): Promise<void> {
+  try { await getRedirectResult(auth) } catch { /* ignorar — no hay redirect pendiente */ }
 }
 
 /** Cerrar sesión. */
