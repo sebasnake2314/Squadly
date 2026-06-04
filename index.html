@@ -3537,7 +3537,9 @@ let sfxCtx=null;
 function getSfx(){ if(!sfxCtx) sfxCtx=new(window.AudioContext||window.webkitAudioContext)(); return sfxCtx; }
 function stopSfx(){ if(sfxCtx){ try{sfxCtx.close();}catch(e){} sfxCtx=null; } }
 
+let _lastFanfareTs=0;
 function playWinnerFanfare(){
+  const _now=Date.now(); if(_now-_lastFanfareTs<2000) return; _lastFanfareTs=_now;
   stopSfx(); const c=getSfx();
   const notes=[523,659,784,1047]; 
   notes.forEach((f,i)=>{
