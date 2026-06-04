@@ -4134,12 +4134,11 @@ function initRoomListeners(roomId){
       if(spinBtn) refreshLockState();
       return;
     }
+    // Ignorar si ya hay una animación en curso (reconexión con datos viejos)
+    if(spinning) return;
     // Deduplicate: ignore same spin
     if(data.startTs && data.startTs === _lastSpinTs) return;
     // Ignorar spins que comenzaron ANTES de que nos uniéramos a la sala
-    // (p.ej. reconexión que recibe datos de una vuelta vieja).
-    // Si el spin ocurrió mientras estamos en la sala, siempre procesarlo:
-    // playRemoteSpin maneja la llegada tardía mostrando al ganador directamente.
     if(data.startTs && data.startTs < _roomInitTs) return;
     _lastSpinTs = data.startTs || 0;
     if(spinBtn) spinBtn.disabled=true;
@@ -4739,7 +4738,7 @@ function spinRoulette(){
       spinning=false;
       const _safeBtn=document.getElementById('spinBtn');
       if(_safeBtn){_safeBtn.disabled=false;_safeBtn.style.opacity='';}
-      // Mostrar ganador directamente con los datos que ya tenemos
+      set(ref(db,'roulette/'+currentRoomId),{spinning:false}).catch(()=>{});
       stopBgMusic(); launchConfetti(); playWinnerFanfare();
       showRemoteWinner(spinData, spinData.eligibleSnapshot||null);
     }
