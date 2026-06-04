@@ -4726,7 +4726,6 @@ function spinRoulette(){
   };
   // Guardar globalmente ANTES de escribir en Firebase
   _currentSpinData = spinData;
-  _lastSpinTs = startTs; // evitar que el listener remoto duplique la animación local
   set(ref(db,'roulette/'+currentRoomId), spinData);
   // Safety timeout: si Firebase no responde y spinning queda trabado, auto-reset.
   // Para bomba: la animación dura 8s fijos + 800ms explosión, así que usar 11s de buffer.
