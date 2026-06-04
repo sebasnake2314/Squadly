@@ -4134,8 +4134,6 @@ function initRoomListeners(roomId){
       if(spinBtn) refreshLockState();
       return;
     }
-    // Ignorar si ya hay una animación en curso (reconexión con datos viejos)
-    if(spinning) return;
     // Deduplicate: ignore same spin
     if(data.startTs && data.startTs === _lastSpinTs) return;
     // Ignorar spins que comenzaron ANTES de que nos uniéramos a la sala
