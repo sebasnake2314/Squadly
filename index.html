@@ -4501,6 +4501,7 @@ function generateQROnCanvas(canvas,url){
 let spinning=false, currentAngle=0;
 let _lastSpinTs=0;
 let _isSpinner=false; // true solo en el cliente que inició el giro
+let _spinResultShown=false; // evita que safety timeout y animación muestren el resultado dos veces
 
 let _wheelWinnerFbKey = null; // set after spin to highlight winner
 let _wheelLastEligible = null; // snapshot of eligible list at spin time
@@ -4727,15 +4728,22 @@ function spinRoulette(){
   // Guardar globalmente ANTES de escribir en Firebase
   _currentSpinData = spinData;
   _isSpinner = true;
+  _spinResultShown = false;
   set(ref(db,'roulette/'+currentRoomId), spinData);
   // Safety timeout: si Firebase no responde y spinning queda trabado, auto-reset.
   // Para bomba: la animación dura 8s fijos + 800ms explosión, así que usar 11s de buffer.
   const _safetyDelay = getRoomGameMode() === 'bomba' ? 11000 : dur + 2000;
   setTimeout(()=>{
-    if(spinning){
+    if(spinning && !_spinResultShown){
       spinning=false;
+      _spinResultShown=true;
       const _safeBtn=document.getElementById('spinBtn');
       if(_safeBtn){_safeBtn.disabled=false;_safeBtn.style.opacity='';}
+      // Actualizar rueda con el ganador correcto antes de mostrar el panel
+      _wheelWinnerFbKey = spinData.winnerFbKey || null;
+      _wheelLastEligible = spinData.eligibleSnapshot ? [...spinData.eligibleSnapshot] : null;
+      currentAngle = spinData.finalAngle || (spinData.startAngle + spinData.totalAngle);
+      drawWheel(currentAngle);
       set(ref(db,'roulette/'+currentRoomId),{spinning:false}).catch(()=>{});
       stopBgMusic(); launchConfetti(); playWinnerFanfare();
       showRemoteWinner(spinData, spinData.eligibleSnapshot||null);
@@ -4842,8 +4850,11 @@ function playRemoteSpin(data){
         // Bomb: handled in bombExplode callback
       } else {
         // Ruleta: show immediately after wheel stops
-        stopBgMusic(); launchConfetti(); playWinnerFanfare();
-        showRemoteWinner(data, remoteEligible);
+        if(!_spinResultShown){
+          _spinResultShown=true;
+          stopBgMusic(); launchConfetti(); playWinnerFanfare();
+          showRemoteWinner(data, remoteEligible);
+        }
       }
       // Limpiar estado en Firebase (solo el spinner lo hace para evitar race)
       set(ref(db,'roulette/'+currentRoomId),{spinning:false});
