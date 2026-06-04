@@ -4501,6 +4501,7 @@ function generateQROnCanvas(canvas,url){
 // ===== CANVAS RULETA =====
 let spinning=false, currentAngle=0;
 let _lastSpinTs=0;
+let _isSpinner=false; // true solo en el cliente que inició el giro
 
 let _wheelWinnerFbKey = null; // set after spin to highlight winner
 let _wheelLastEligible = null; // snapshot of eligible list at spin time
@@ -4726,6 +4727,7 @@ function spinRoulette(){
   };
   // Guardar globalmente ANTES de escribir en Firebase
   _currentSpinData = spinData;
+  _isSpinner = true;
   set(ref(db,'roulette/'+currentRoomId), spinData);
   // Safety timeout: si Firebase no responde y spinning queda trabado, auto-reset.
   // Para bomba: la animación dura 8s fijos + 800ms explosión, así que usar 11s de buffer.
@@ -4942,11 +4944,10 @@ function showWinner(m){
 
 
 async function autoConfirmWinner(winner){
+  if(!_isSpinner) return; // solo el cliente que giró escribe en historial
+  _isSpinner = false; // prevenir doble escritura si se llama dos veces
   stopBgMusic();
   if(!winner || !currentRoomId) return;
-  // Guard: only the person who triggered the spin should write to history
-  // Use _currentSpinData — only set for the spinner before Firebase write
-  if(!_currentSpinData) return;
   // Extra guard: check if already written for today's facilitation date
   const tmrw = getTaskDueDate();
   const alreadyWritten = state.history.find(h =>
