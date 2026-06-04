@@ -4122,7 +4122,7 @@ function initRoomListeners(roomId){
 
   // Listener de ruleta en tiempo real — todos ven la animación sincronizada
   const rRef=ref(db,'roulette/'+roomId);
-  let _lastSpinTs = 0;
+  _lastSpinTs = 0;
   const _roomInitTs = Date.now(); // time we subscribed
   const rFn=snap=>{
     const data=snap.val();
@@ -4500,6 +4500,7 @@ function generateQROnCanvas(canvas,url){
 
 // ===== CANVAS RULETA =====
 let spinning=false, currentAngle=0;
+let _lastSpinTs=0;
 
 let _wheelWinnerFbKey = null; // set after spin to highlight winner
 let _wheelLastEligible = null; // snapshot of eligible list at spin time
