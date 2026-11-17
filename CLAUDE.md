@@ -115,6 +115,8 @@ memberLinks/{uid}/{roomId}   ← links Google account to a memberId
 
 **Member status hierarchy:** `getMemberStatus()` checks (in order): facilitating today → assigned tomorrow → unavailable tomorrow → free day 1 → free day 2 → eligible. It additionally applies the `requireOnline` room setting. `getMemberStatusBase()` is the same without the online check.
 
+**Días hábiles:** `workDays` en `rooms/` y `roomsMeta/` (números de `getDay()`, 0=domingo); sin definir → lunes a viernes. Solo se sortea en días hábiles, los días libres cuentan solo días hábiles, y "mañana" (`assigned_tomorrow`, `dueMode: 'tomorrow'`) es el próximo día hábil. Las fechas `YYYY-MM-DD` son en hora local (`ymd()`), nunca `toISOString()` (UTC). Lógica duplicada en `index.html` (sección DÍAS HÁBILES) y `src/utils/dates.ts`.
+
 **Spin eligibility:** `getEligible()` filters `state.members` by status and, if `requireOnline` is set, by `isMemberOnline()`. Minimum participant count is enforced before allowing a spin.
 
 ## Room types

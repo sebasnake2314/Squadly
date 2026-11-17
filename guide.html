@@ -264,7 +264,7 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         <div class="step-num">3</div>
         <div class="step-body">
           <h3>Configurá las reglas del sorteo</h3>
-          <p>Definí el propósito, la presencia requerida, los días de exclusión y el modo de juego.</p>
+          <p>Definí el propósito, la presencia requerida, los días hábiles, los días de exclusión y el modo de juego.</p>
         </div>
       </div>
       <div class="step">
@@ -280,13 +280,14 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         <div class="step-body">
           <h3>Realizar el sorteo</h3>
           <p>Presioná el botón para iniciar. La app elige al ganador con el modo de juego configurado. Dependiendo de la configuración de la sala, el sorteo puede incluir solo a los miembros conectados en ese momento o a todos los miembros registrados, estén en línea o no.</p>
+          <span class="step-tip">💡 Solo se puede sortear en los días hábiles de la sala. Los demás días el botón aparece bloqueado y la app indica cuándo es el próximo sorteo.</span>
         </div>
       </div>
       <div class="step">
         <div class="step-num">6</div>
         <div class="step-body">
           <h3>El ganador confirma</h3>
-          <p>Si la sala usa presencia en línea, el seleccionado acepta o rechaza. Si rechaza, se sortea de nuevo automáticamente.</p>
+          <p>Si la sala usa presencia en línea, el seleccionado acepta o rechaza. Si rechaza, se sortea de nuevo automáticamente. En el modo <strong>Bomba</strong> la asignación siempre es automática, sin confirmación.</p>
         </div>
       </div>
     </div>
@@ -312,14 +313,21 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         <div class="ci-icon">😴</div>
         <div>
           <div class="ci-name">Días de exclusión</div>
-          <div class="ci-desc">Cuántos días descansa alguien después de ser sorteado antes de volver al pool. Ej: con 2 días de exclusión, si te sortean el lunes, volvés a participar el miércoles.</div>
+          <div class="ci-desc">Cuántos días hábiles descansa alguien después de cumplir la tarea antes de volver al pool. Ej: con 2 días de exclusión, si facilitás el viernes, descansás lunes y martes y volvés a participar el miércoles.</div>
+        </div>
+      </div>
+      <div class="config-item">
+        <div class="ci-icon">🗓️</div>
+        <div>
+          <div class="ci-name">Días hábiles</div>
+          <div class="ci-desc">Los días de la semana en que trabaja el equipo (L M X J V S D). Solo esos días se puede sortear y solo ellos cuentan como días de exclusión. Por defecto, de lunes a viernes.</div>
         </div>
       </div>
       <div class="config-item">
         <div class="ci-icon">📅</div>
         <div>
           <div class="ci-name">¿Cuándo cumplir la tarea?</div>
-          <div class="ci-desc"><strong>Mismo día:</strong> la tarea es para hoy.<br><strong>Día siguiente:</strong> el sorteo de hoy asigna la tarea de mañana.<br><strong>Fecha personalizada:</strong> una fecha específica del calendario.</div>
+          <div class="ci-desc"><strong>Mismo día:</strong> la tarea es para hoy.<br><strong>Día siguiente:</strong> la tarea es para el próximo día hábil (un sorteo del viernes asigna la tarea del lunes).<br><strong>Fecha personalizada:</strong> una fecha específica del calendario.</div>
         </div>
       </div>
       <div class="config-item">
@@ -422,7 +430,7 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         <div class="step-num">2</div>
         <div class="step-body">
           <h3>Confirmás si podés</h3>
-          <p>Si la sala usa presencia en línea, aparecen dos botones: <strong>✓ Acepta</strong> y <strong>✗ No puede</strong>.</p>
+          <p>Si la sala usa presencia en línea, aparecen dos botones: <strong>✓ Acepta</strong> y <strong>✗ No puede</strong>. Solo los ve la persona seleccionada.</p>
         </div>
       </div>
       <div class="step">
@@ -430,7 +438,7 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         <div class="step-body">
           <h3>Si rechazás, se sortea de nuevo</h3>
           <p>La app saca tu nombre del pool y gira automáticamente entre los restantes.</p>
-          <span class="step-tip">💡 En salas sin presencia en línea, la asignación es automática sin confirmación</span>
+          <span class="step-tip">💡 En salas sin presencia en línea y en el modo Bomba, la asignación es automática sin confirmación</span>
         </div>
       </div>
     </div>
@@ -458,18 +466,13 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
           <td style="color:var(--danger);font-weight:600;">No</td>
         </tr>
         <tr>
-          <td><span class="status-badge sb-gold">✓ Ganador mañana</span></td>
-          <td style="color:var(--text2);">Ya fue sorteado para la próxima sesión</td>
+          <td><span class="status-badge sb-gold">✓ Asignado próximo</span></td>
+          <td style="color:var(--text2);">Ya fue sorteado para el próximo día hábil</td>
           <td style="color:var(--danger);font-weight:600;">No</td>
         </tr>
         <tr>
-          <td><span class="status-badge sb-orange">○ Día libre 1</span></td>
-          <td style="color:var(--text2);">Primer día de descanso post-sorteo</td>
-          <td style="color:var(--danger);font-weight:600;">No</td>
-        </tr>
-        <tr>
-          <td><span class="status-badge sb-orange">○ Día libre 2</span></td>
-          <td style="color:var(--text2);">Segundo día de descanso post-sorteo</td>
+          <td><span class="status-badge sb-orange">○ Día libre 1 de 2</span></td>
+          <td style="color:var(--text2);">Días hábiles de descanso después de cumplir la tarea. Hay tantos como días de exclusión tenga la sala</td>
           <td style="color:var(--danger);font-weight:600;">No</td>
         </tr>
         <tr>
@@ -484,6 +487,10 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         </tr>
       </tbody>
     </table>
+    <div class="info-box" style="margin-top:16px;">
+      <span class="ib-icon">🗓️</span>
+      <span>En los días no hábiles (por ejemplo, el fin de semana) cada miembro muestra el estado que va a tener el próximo día hábil.</span>
+    </div>
   </section>
 
   <!-- § 4 — MODOS -->
@@ -515,7 +522,7 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
       <div class="mode-card">
         <span class="mode-anim"><span class="anim-pulse">💣</span></span>
         <div class="mode-name">Bomba</div>
-        <div class="mode-desc">Cuenta regresiva con tensión musical que explota revelando al seleccionado</div>
+        <div class="mode-desc">Cuenta regresiva que se acelera y explota revelando al seleccionado. Asigna automáticamente, sin confirmación</div>
       </div>
       <div class="mode-card">
         <span class="mode-anim"><span class="anim-dice">🎲</span></span>
@@ -549,14 +556,28 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
           ¿Qué son los días de exclusión?
           <span class="faq-arrow">▼</span>
         </button>
-        <div class="faq-a">Es el período de descanso después de ser sorteado. Si la sala tiene 2 días de exclusión y te sortean el lunes, no volvés a participar hasta el miércoles. Esto evita que la misma persona sea seleccionada repetidamente.</div>
+        <div class="faq-a">Es el período de descanso después de cumplir la tarea, contado en días hábiles. Si la sala tiene 2 días de exclusión y facilitás el lunes, descansás martes y miércoles y volvés a participar el jueves. Si facilitás el viernes, el fin de semana no cuenta: descansás lunes y martes y volvés el miércoles. Esto evita que la misma persona sea seleccionada repetidamente.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Cómo funcionan los días hábiles?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-a">Cada sala tiene sus días hábiles, que por defecto son de lunes a viernes. El admin puede cambiarlos al crear la sala o desde <strong>⚙ Configurar</strong>, en la fila de días <strong>L M X J V S D</strong>. Afectan tres cosas: solo se puede sortear en días hábiles, los días de exclusión cuentan solo días hábiles, y "Día siguiente" asigna la tarea al próximo día hábil. Si tu equipo trabaja los sábados, activá la <strong>S</strong>.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Por qué el botón de sortear está bloqueado?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-a">Puede ser por alguno de estos motivos, y la app muestra un aviso con el motivo:<br>• <strong>Hoy no es día hábil</strong> en la sala. El aviso indica la fecha del próximo sorteo.<br>• <strong>Ya hay un seleccionado</strong> para hoy. Si fue un error, el admin puede revertirlo desde el Historial.<br>• <strong>No se llega al mínimo</strong> de participantes (en línea o seleccionados).<br>• <strong>Alguien facilita hoy</strong>: en ese caso solo pueden girar el admin y esa persona.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
           ¿Qué pasa si el seleccionado rechaza la tarea?
           <span class="faq-arrow">▼</span>
         </button>
-        <div class="faq-a">Si la sala usa presencia en línea, el participante puede rechazar haciendo clic en "✗ No puede". La app lo excluye del pool y sortea automáticamente entre los restantes. Si todos rechazan, el admin puede girar nuevamente.</div>
+        <div class="faq-a">Si la sala usa presencia en línea, el participante puede rechazar haciendo clic en "✗ No puede". La app lo excluye del pool y sortea automáticamente entre los restantes. Si todos rechazan, el admin puede girar nuevamente. En salas sin presencia en línea y en el modo Bomba no hay opción de rechazar: la asignación es automática.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
@@ -570,7 +591,7 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
           ¿Quién puede hacer el sorteo?
           <span class="faq-arrow">▼</span>
         </button>
-        <div class="faq-a">Por defecto, el administrador de la sala. En salas sin presencia requerida, también puede girar la persona que facilita hoy. Si no hay nadie asignado y el admin no está en línea, cualquier participante puede iniciar el sorteo.</div>
+        <div class="faq-a">El administrador de la sala siempre puede. Si alguien facilita hoy, también puede girar esa persona (y nadie más). Si nadie facilita hoy, cualquier participante puede iniciar el sorteo. En todos los casos, solo en días hábiles.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
