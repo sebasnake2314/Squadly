@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { User } from 'firebase/auth'
 import { SquadlyLogo } from '../components/common/SquadlyLogo'
+import { UserAvatar } from '../components/common/UserAvatar'
 import { signOut } from '../services/auth'
 import { deleteRoom } from '../services/rooms'
 import { useRooms, type AdminRoom, type ParticipantRoom } from '../hooks/useRooms'
@@ -58,11 +59,7 @@ export function LobbyView({ user, onEnterRoom, autoJoinCode }: Props) {
           <h1>Squad<span>ly</span></h1>
         </div>
         <div className="user-bar">
-          {user.photoURL && (
-            <div className="user-avatar">
-              <img src={user.photoURL} alt={user.displayName ?? ''} />
-            </div>
-          )}
+          <UserAvatar user={user} />
           <div className="user-name">{user.displayName ?? user.email}</div>
           <button className="logout-btn" onClick={() => signOut()}>Salir</button>
         </div>

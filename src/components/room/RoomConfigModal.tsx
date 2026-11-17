@@ -4,6 +4,8 @@
  */
 import { useState } from 'react'
 import { updateRoomConfig } from '../../services/rooms'
+import { getRoomWorkDays } from '../../utils/dates'
+import { WorkDaysPicker } from '../common/WorkDaysPicker'
 import type { GameMode, MusicType, DueMode, RoomMeta } from '../../types'
 
 const GAME_MODES: { value: GameMode; label: string }[] = [
@@ -34,6 +36,7 @@ export function RoomConfigModal({ ownerUid, roomId, roomData, onSaved, onClose }
 
   const [purpose,        setPurpose]        = useState(roomData.purpose ?? '')
   const [freeDays,       setFreeDays]       = useState(roomData.freeDays ?? 2)
+  const [workDays,       setWorkDays]       = useState(() => getRoomWorkDays(roomData.workDays))
   const [minPart,        setMinPart]        = useState(roomData.minParticipants ?? 2)
   const [requireOnline,  setRequireOnline]  = useState(roomData.requireOnline ?? false)
   const [dueMode,        setDueMode]        = useState<DueMode>(roomData.dueMode ?? 'tomorrow')
@@ -52,6 +55,7 @@ export function RoomConfigModal({ ownerUid, roomId, roomData, onSaved, onClose }
         roomId,
         purpose: purpose.trim(),
         freeDays,
+        workDays,
         minParticipants: minPart,
         requireOnline,
         dueMode,
@@ -138,6 +142,9 @@ export function RoomConfigModal({ ownerUid, roomId, roomData, onSaved, onClose }
                   <button type="button" className="num-btn" onClick={() => setFreeDays(d => Math.min(14, d + 1))} disabled={saving}>+</button>
                 </div>
               </div>
+
+              {/* Dias habiles */}
+              <WorkDaysPicker value={workDays} onChange={setWorkDays} disabled={saving} />
 
               {/* Minimo participantes */}
               <div className="form-label">

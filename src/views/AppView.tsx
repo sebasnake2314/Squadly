@@ -18,6 +18,7 @@ import { RoomConfigModal } from '../components/room/RoomConfigModal'
 import { EditProfileModal } from '../components/room/EditProfileModal'
 import type { Member, HistoryEntry, MemberStatus, RoomMeta } from '../types'
 import type { RoomContext } from '../services/status'
+import { UserAvatar } from '../components/common/UserAvatar'
 
 type Tab = 'ruleta' | 'equipo' | 'historial'
 
@@ -140,11 +141,7 @@ function AppHeader({
             Ajustes
           </button>
         )}
-        {user?.photoURL && (
-          <div className="user-avatar">
-            <img src={user.photoURL} alt={user.displayName ?? ''} />
-          </div>
-        )}
+        {user && <UserAvatar user={user} />}
         <button className="logout-btn" onClick={onSignOut}>Salir</button>
       </div>
     </div>
@@ -383,8 +380,8 @@ function MemberAvatarSm({ member }: { member: { name: string; emoji?: string | n
 
 const STATUS_MAP: Record<string, { label: string; cls: string }> = {
   facilitating_today:   { label: 'Facilita hoy',        cls: 'badge-facilitating' },
-  assigned_tomorrow:    { label: 'Asignado manana',      cls: 'badge-assigned'     },
-  unavailable_tomorrow: { label: 'No disponible manana', cls: 'badge-unavailable'  },
+  assigned_tomorrow:    { label: 'Asignado proximo',      cls: 'badge-assigned'     },
+  unavailable_tomorrow: { label: 'No disponible proximo', cls: 'badge-unavailable'  },
   eligible:             { label: 'Disponible',           cls: 'badge-eligible'     },
   offline:              { label: 'Sin conexion',         cls: 'badge-offline'      },
 }

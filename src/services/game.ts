@@ -20,7 +20,7 @@ export function pickRandomWinner(eligible: Member[]): Member | null {
 
 export interface SaveWinnerParams {
   roomId: string
-  room: Pick<RoomMeta, 'dueMode' | 'dueCustomDate' | 'freeDays' | 'purpose'>
+  room: Pick<RoomMeta, 'dueMode' | 'dueCustomDate' | 'freeDays' | 'workDays' | 'purpose'>
   winner: Member
   gameMode: GameMode
   history: HistoryEntry[]

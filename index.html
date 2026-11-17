@@ -489,9 +489,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   .app { padding: 0 14px 40px; }
 }
 
-.due-opt{flex:1;padding:8px 6px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit;}
-.due-opt:hover{border-color:var(--accent2);color:var(--text);}
-.due-opt.active{background:var(--accent);border-color:var(--accent);color:white;}
+.due-opt,.workday-opt{flex:1;padding:8px 6px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;transition:all .2s;font-family:inherit;}
+.due-opt:hover,.workday-opt:hover{border-color:var(--accent2);color:var(--text);}
+.due-opt.active,.workday-opt.active{background:var(--accent);border-color:var(--accent);color:white;}
+.workday-row{display:flex;gap:4px;}
+.workday-opt{padding:8px 0;min-width:0;font-weight:600;}
 
 /* ROOM CONFIG MODAL */
 .config-btn{padding:6px 12px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;cursor:pointer;transition:all .2s;display:none;}
@@ -750,7 +752,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <h1>Squad<span>ly</span></h1>
       </div>
       <div class="user-bar">
-        <div class="user-avatar"><img id="userAvatar" src="" alt=""></div>
+        <div class="user-avatar"><img id="userAvatar" src="" alt="" referrerpolicy="no-referrer" onerror="if(this.getAttribute('src'))this.style.display='none'"></div>
         <div class="user-name" id="userName"></div>
         <a class="guide-btn" href="guide.html" title="Guía de usuario">📖 Guía</a>
         <button class="logout-btn" onclick="signOut()">Salir</button>
@@ -795,7 +797,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           <span style="font-size:11px;color:var(--text3);">✏</span>
         </div>
         <!-- Foto Google + Salir -->
-        <div class="user-avatar"><img id="appUserAvatar" src="" alt=""></div>
+        <div class="user-avatar"><img id="appUserAvatar" src="" alt="" referrerpolicy="no-referrer" onerror="if(this.getAttribute('src'))this.style.display='none'"></div>
         <button class="logout-btn" onclick="signOut()">Salir</button>
       </div>
       <!-- No admin (QR/link): muestra botones de acción -->
@@ -1088,6 +1090,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         <div class="field" style="margin-bottom:0;"><label>Días de exclusión</label><input type="number" id="roomFreeDaysInput" min="0" max="30" value="2" style="width:100%;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;"></div>
       </div>
       <div class="field" style="margin-top:10px;margin-bottom:0;">
+        <label>Días hábiles</label>
+        <div class="workday-row" id="createWorkDays" style="margin-top:6px;"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">Solo se sortea en días hábiles, y solo ellos cuentan como días de exclusión</div>
+      </div>
+      <div class="field" style="margin-top:10px;margin-bottom:0;">
         <label>Modo de selección</label>
         <div class="game-mode-grid" id="createGameModeGrid" style="margin-top:6px;">
           <div class="game-mode-card sel" data-mode="ruleta" onclick="selectGameMode('ruleta',this,'create')"><div class="gm-icon">🎰</div><div class="gm-name">Ruleta</div></div>
@@ -1316,6 +1323,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           <input type="number" id="cfgFreeDays" min="0" max="30"
             style="width:100%;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;">
         </div>
+      </div>
+      <div class="field" style="margin-top:12px;margin-bottom:0;">
+        <label>Días hábiles</label>
+        <div class="workday-row" id="cfgWorkDays" style="margin-top:6px;"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;">Solo se sortea en días hábiles, y solo ellos cuentan como días de exclusión</div>
       </div>
       <div class="field" style="margin-top:12px;margin-bottom:0;">
         <label>Presencia en línea</label>
@@ -1870,6 +1882,27 @@ function generateRoomCode(){
   for(let i=0;i<6;i++) code+=chars[Math.floor(Math.random()*chars.length)];
   return code;
 }
+// Días hábiles — create modal y config modal guardan selecciones separadas (como selectedGameMode/cfgGameMode).
+// Se inicializan al abrir cada modal (DEFAULT_WORK_DAYS se declara más abajo en el módulo).
+let selectedWorkDays=null, cfgWorkDays=null;
+const WORK_DAY_OPTS=[[1,'L','Lunes'],[2,'M','Martes'],[3,'X','Miércoles'],[4,'J','Jueves'],[5,'V','Viernes'],[6,'S','Sábado'],[0,'D','Domingo']];
+function renderWorkDays(ctx){
+  const el=document.getElementById(ctx==='create'?'createWorkDays':'cfgWorkDays'); if(!el) return;
+  const sel=ctx==='create'?selectedWorkDays:cfgWorkDays;
+  el.innerHTML=WORK_DAY_OPTS.map(([d,l,t])=>`<button type="button" class="workday-opt${sel.includes(d)?' active':''}" title="${t}" onclick="toggleWorkDay(${d},'${ctx}')">${l}</button>`).join('');
+}
+function toggleWorkDay(day,ctx){
+  const sel=ctx==='create'?selectedWorkDays:cfgWorkDays;
+  const i=sel.indexOf(day);
+  if(i>=0){
+    if(sel.length===1){showToast('Debe haber al menos un día hábil');return;}
+    sel.splice(i,1);
+  } else sel.push(day);
+  sel.sort();
+  renderWorkDays(ctx);
+}
+window.toggleWorkDay=toggleWorkDay;
+
 let selectedDueMode='today';
 function selectDueMode(mode,el){
   selectedDueMode=mode;
@@ -1879,11 +1912,11 @@ function selectDueMode(mode,el){
   if(mode==='custom'){
     // Mínimo: mañana
     const minDate=new Date(); minDate.setDate(minDate.getDate()+1);
-    picker.min=minDate.toISOString().slice(0,10);
+    picker.min=ymd(minDate);
     // Default: pasado mañana
     if(!picker.value || picker.value<=today()){
       const def=new Date(); def.setDate(def.getDate()+2);
-      picker.value=def.toISOString().slice(0,10);
+      picker.value=ymd(def);
     }
     picker.style.display='block';
   } else {
@@ -1902,6 +1935,7 @@ function openCreateRoom(){
   document.getElementById('roomConvDescInput').value='';
   document.getElementById('roomMinInput').value='2';
   document.getElementById('roomFreeDaysInput').value='2';
+  selectedWorkDays=[...DEFAULT_WORK_DAYS]; renderWorkDays('create');
   document.getElementById('roomDueCustomDate').value='';
   document.getElementById('roomDueCustomDate').style.display='none';
   // Reset type
@@ -1960,8 +1994,8 @@ async function createRoom(){
   if(dueMode==='custom'&&!dueCustomDate){showToast('Selecciona una fecha del calendario');return;}
   if(dueMode==='custom'&&dueCustomDate<=today()){showToast('La fecha debe ser posterior a hoy');return;}
   setSyncStatus('syncing');
-  const r=await push(ref(db,'rooms/'+currentUser.uid),{name,type:'sorteo',purpose,icon:selectedEmoji,pin,roomCode:generateRoomCode(),minParticipants,freeDays,dueMode,dueDays,dueCustomDate:dueCustomDate||null,requireOnline,createdAt:Date.now(),ownerUid:currentUser.uid});
-  await set(ref(db,'roomsMeta/'+r.key),{name,type:'sorteo',purpose,icon:selectedEmoji,pin,roomCode:c_roomCode,minParticipants,freeDays,dueMode,dueDays,dueCustomDate:dueCustomDate||null,requireOnline,gameMode:selectedGameMode||'ruleta',musicType:selectedMusicType||'none',ownerUid:currentUser.uid});
+  const r=await push(ref(db,'rooms/'+currentUser.uid),{name,type:'sorteo',purpose,icon:selectedEmoji,pin,roomCode:generateRoomCode(),minParticipants,freeDays,workDays:selectedWorkDays,dueMode,dueDays,dueCustomDate:dueCustomDate||null,requireOnline,createdAt:Date.now(),ownerUid:currentUser.uid});
+  await set(ref(db,'roomsMeta/'+r.key),{name,type:'sorteo',purpose,icon:selectedEmoji,pin,roomCode:c_roomCode,minParticipants,freeDays,workDays:selectedWorkDays,dueMode,dueDays,dueCustomDate:dueCustomDate||null,requireOnline,gameMode:selectedGameMode||'ruleta',musicType:selectedMusicType||'none',ownerUid:currentUser.uid});
   await set(ref(db,'roomsIndex/'+r.key),currentUser.uid);
   await set(ref(db,'roomCodeIndex/'+c_roomCode), r.key);
   setSyncStatus('live'); closeCreateRoom();
@@ -2159,7 +2193,7 @@ function openAdminJoinModal(){
       ajGoog.style.display = 'block';
       const ajAv = document.getElementById('ajGoogleAv');
       if(ajAv && currentUser.photoURL)
-        ajAv.innerHTML = `<img src="${currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
+        ajAv.innerHTML = `<img src="${escHtml(currentUser.photoURL)}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;">`;
       const ajNm = document.getElementById('ajGoogleName');
       if(ajNm) ajNm.textContent = currentUser.displayName || currentUser.email;
     } else {
@@ -2342,6 +2376,7 @@ function openRoomConfig(){
   document.getElementById('cfgPurpose').value = currentRoomData.purpose || '';
   document.getElementById('cfgMin').value = currentRoomData.minParticipants || 2;
   document.getElementById('cfgFreeDays').value = currentRoomData.freeDays ?? 2;
+  cfgWorkDays = getRoomWorkDays(); renderWorkDays('cfg');
   // Pre-fill requireOnline
   const _curOnline = currentRoomData.requireOnline !== false;
   _cfgOnline = _curOnline; // sincronizar variable de guardado con el valor actual de la sala
@@ -2378,7 +2413,7 @@ function updateCfgDueSummary(){
   if(!el) return;
   const mode = cfgDueMode;
   if(mode==='today') el.textContent = 'Actual: la tarea se cumple el mismo día del sorteo';
-  else if(mode==='tomorrow') el.textContent = 'Actual: la tarea se cumple al día siguiente';
+  else if(mode==='tomorrow') el.textContent = 'Actual: la tarea se cumple el siguiente día hábil';
   else {
     const d = document.getElementById('cfgDueCustomDate').value;
     el.textContent = d ? `Actual: la tarea se cumple el ${fmtDate(d)}` : 'Selecciona una fecha';
@@ -2392,10 +2427,10 @@ function selectCfgDue(mode, el){
   const picker = document.getElementById('cfgDueCustomDate');
   if(mode === 'custom'){
     const minDate = new Date(); minDate.setDate(minDate.getDate()+1);
-    picker.min = minDate.toISOString().slice(0,10);
+    picker.min = ymd(minDate);
     if(!picker.value || picker.value <= today()){
       const def = new Date(); def.setDate(def.getDate()+2);
-      picker.value = def.toISOString().slice(0,10);
+      picker.value = ymd(def);
     }
     picker.style.display = 'block';
   } else {
@@ -2430,7 +2465,7 @@ async function saveRoomConfig(){
 
   setSyncStatus('syncing');
   const requireOnline = _cfgOnline !== false;
-  const updates = {purpose, minParticipants, freeDays, dueMode, dueDays, dueCustomDate: dueCustomDate||null, requireOnline, gameMode: cfgGameMode||'ruleta', musicType: cfgMusicType||'none'};
+  const updates = {purpose, minParticipants, freeDays, workDays: cfgWorkDays, dueMode, dueDays, dueCustomDate: dueCustomDate||null, requireOnline, gameMode: cfgGameMode||'ruleta', musicType: cfgMusicType||'none'};
   // Update in rooms/{uid}/{roomId}
   await update(ref(db,'rooms/'+currentUser.uid+'/'+currentRoomId), updates);
   // Update in roomsMeta/{roomId}
@@ -2918,7 +2953,7 @@ function openProfileChoiceModal(roomId, roomData){
   if(currentUser){
     const gAv = document.getElementById('pcGoogleAvatar');
     if(currentUser.photoURL){
-      gAv.innerHTML=`<img src="${currentUser.photoURL}" style="width:100%;height:100%;object-fit:cover;">`;
+      gAv.innerHTML=`<img src="${escHtml(currentUser.photoURL)}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;">`;
       gAv.style.background='';
     }
     document.getElementById('pcGoogleName').textContent = currentUser.displayName || currentUser.email;
@@ -3347,17 +3382,19 @@ function getEligibleBase(){
 
 // getMemberStatus ignoring online requirement
 function getMemberStatusBase(id, fbKey){
-  const tmrw=tomorrow(), tod=today();
-  if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tod&&h.type==='assigned'&&!h.reverted)) return 'facilitating_today';
-  if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='assigned'&&!h.reverted)) return 'assigned_tomorrow';
-  if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='unavailable'&&!h.reverted)) return 'unavailable_tomorrow';
-  const fd=getRoomFreeDays();
-  for(let i=1;i<=fd;i++){
-    const dayStr=dateOffset(-i);
-    if(state.history.find(h=>h.memberId===id&&h.facilitationDate===dayStr&&h.type==='assigned'&&!h.reverted))
-      return 'free_day'+i;
+  const tod=today(), next=nextWorkDay(tod); // "mañana" = próximo día hábil
+  const mine=state.history.filter(h=>h.memberId===id&&!h.reverted);
+  if(mine.find(h=>h.facilitationDate===tod&&h.type==='assigned')) return 'facilitating_today';
+  if(mine.find(h=>h.facilitationDate===next&&h.type==='assigned')) return 'assigned_tomorrow';
+  if(mine.find(h=>h.facilitationDate===next&&h.type==='unavailable')) return 'unavailable_tomorrow';
+  // Días libres: solo cuentan días hábiles
+  let best=0;
+  for(const h of mine){
+    if(h.type!=='assigned') continue;
+    const k=freeDayIndex(h.facilitationDate);
+    if(k && (!best || k<best)) best=k;
   }
-  return 'eligible';
+  return best?'free_day'+best:'eligible';
 }
 
 // ===== GAME MODE & MUSIC =====
@@ -3650,6 +3687,7 @@ function getFanPositions(n){
 }
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function escHtml(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function renderCardsDeck(eligible, winnerFbKey){
   // Force gameCartas visible and wait for browser paint before animating
@@ -3820,9 +3858,9 @@ async function flipCardAsync(fbKey, wm, deck){
   // Reveal
   card.classList.remove('face-down'); card.classList.add('winner-card');
   const av=wm.image
-    ?`<div class="card-member-av" style="width:52px;height:52px;"><img src="${wm.image}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
-    :`<div class="card-member-av" style="width:52px;height:52px;font-size:24px;background:${wm.color||'#6c63ff'}">${wm.emoji||'👤'}</div>`;
-  card.innerHTML=`<div class="winner-crown">👑</div>${av}<div class="card-member-name">${wm.name}</div>`;
+    ?`<div class="card-member-av" style="width:52px;height:52px;"><img src="${escHtml(wm.image)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>`
+    :`<div class="card-member-av" style="width:52px;height:52px;font-size:24px;background:${escHtml(wm.color||'#6c63ff')}">${escHtml(wm.emoji||'👤')}</div>`;
+  card.innerHTML=`<div class="winner-crown">👑</div>${av}<div class="card-member-name">${escHtml(wm.name)}</div>`;
   // Unfold
   card.style.transition='transform 0.18s ease-out';
   void card.offsetWidth;
@@ -3855,8 +3893,8 @@ function buildSlotReel(members, winnerIdx){
 }
 
 function slotItemHtml(m){
-  const av=m.image?`<div class="slot-reel-av"><img src="${m.image}"></div>`:`<div class="slot-reel-av" style="background:${m.color||'#6c63ff'}">${m.emoji||'👤'}</div>`;
-  return `<div class="slot-reel-item">${av}<div class="slot-reel-name">${m.name}</div></div>`;
+  const av=m.image?`<div class="slot-reel-av"><img src="${escHtml(m.image)}"></div>`:`<div class="slot-reel-av" style="background:${escHtml(m.color||'#6c63ff')}">${escHtml(m.emoji||'👤')}</div>`;
+  return `<div class="slot-reel-item">${av}<div class="slot-reel-name">${escHtml(m.name)}</div></div>`;
 }
 
 function renderSlotsReels(eligible){
@@ -3870,7 +3908,7 @@ function renderSlotsReels(eligible){
   if(flash) flash.style.opacity='0';
 }
 
-function stopSlotsOnWinner(winnerFbKey, eligible){
+function stopSlotsOnWinner(winnerFbKey, eligible, onDone){
   const track=document.getElementById('slotReelTrack');
   const result=document.getElementById('slotMachineResult');
   const flash=document.getElementById('slotWinFlash');
@@ -3900,14 +3938,7 @@ function stopSlotsOnWinner(winnerFbKey, eligible){
             setTimeout(()=>flash.style.opacity='0',900);
           }
           playSlotsStopSfx();
-          // Stop music + show winner in result panel
-          stopBgMusic();
-          launchConfetti();
-          playWinnerFanfare();
-          if(_currentSpinData){
-            showRemoteWinner(_currentSpinData, eligible);
-            if(!getRoomRequireOnline()) autoConfirmWinner(winner);
-          }
+          if(onDone) onDone();
         },2300);
       },800);
     },800);
@@ -3924,18 +3955,19 @@ function playSlotsStopSfx(){
 }
 
 // ===== BOMB GAME =====
-let bombInterval=null;
-function startBombGame(eligible, winnerFbKey, duration){
+let bombInterval=null, bombCountdown=null;
+function startBombGame(eligible, winnerFbKey, onDone){
   const circle=document.getElementById('bombCircle');
   const timerEl=document.getElementById('bombTimer');
   const partsEl=document.getElementById('bombParticipants');
-  if(!circle||!timerEl||!partsEl) return;
+  if(!circle||!timerEl||!partsEl){ if(onDone) onDone(); return; }
+  clearInterval(bombInterval); clearInterval(bombCountdown);
   circle.classList.remove('danger');
   circle.style.background='';
   // Render participant avatars
   partsEl.innerHTML=eligible.map(m=>{
-    const av=m.image?`<img src="${m.image}">`:(m.emoji||'👤');
-    const bg=m.image?'':`background:${m.color||'#6c63ff'}`;
+    const av=m.image?`<img src="${escHtml(m.image)}">`:escHtml(m.emoji||'👤');
+    const bg=m.image?'':`background:${escHtml(m.color||'#6c63ff')}`;
     return `<div class="bomb-av" id="bombav-${m.fbKey}" style="${bg}">${av}</div>`;
   }).join('');
   let seconds=8; // always 8 seconds for dramatic effect
@@ -3949,15 +3981,17 @@ function startBombGame(eligible, winnerFbKey, duration){
     currentIdx++;
   };
   highlight();
-  const speed=Math.max(80, 300-seconds*20);
-  bombInterval=setInterval(highlight, speed);
+  const speed=s=>Math.max(80, 60+s*25); // 260ms → 85ms: acelera a medida que se acaba el tiempo
+  bombInterval=setInterval(highlight, speed(seconds));
   // Countdown
-  const countdown=setInterval(()=>{
+  bombCountdown=setInterval(()=>{
     seconds--;
     timerEl.textContent=seconds;
     if(seconds<=3) circle.classList.add('danger');
     playBombBeep(seconds);
-    if(seconds<=0){ clearInterval(countdown); clearInterval(bombInterval); bombExplode(winnerFbKey, eligible); }
+    clearInterval(bombInterval);
+    if(seconds<=0){ clearInterval(bombCountdown); bombExplode(winnerFbKey, onDone); }
+    else bombInterval=setInterval(highlight, speed(seconds));
   },1000);
 }
 
@@ -3969,7 +4003,7 @@ function playBombBeep(s){
   o.start();o.stop(c.currentTime+.08);
 }
 
-function bombExplode(winnerFbKey, eligible){
+function bombExplode(winnerFbKey, onDone){
   stopBgMusic();
   const circle=document.getElementById('bombCircle');
   const timerEl=document.getElementById('bombTimer');
@@ -3988,26 +4022,14 @@ function bombExplode(winnerFbKey, eligible){
   src.buffer=buf; src.connect(f); f.connect(g); g.connect(ac.destination);
   g.gain.setValueAtTime(1,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.7);
   src.start();src.stop(ac.currentTime+.8);
-  // Show winner in result panel + assign to history
-  const winner=eligible.find(m=>m.fbKey===winnerFbKey)||eligible[0];
-  if(winner && _currentSpinData){
-    setTimeout(()=>{
-      showRemoteWinner(_currentSpinData, eligible);
-      launchConfetti();
-      playWinnerFanfare();
-      const sb=document.getElementById('spinBtn');
-      if(sb){sb.disabled=true;sb.style.opacity='0.5';}
-      // Always save to history for bomb (bomb = auto-confirm always)
-      saveBombWinner(winner);
-    },800);
-  }
+  // Resultado + historial: finishSpin (después de la explosión)
+  if(onDone) setTimeout(onDone, 800);
 }
 
-// ===== OVERRIDE spinRoulette to handle all modes =====
-// Store original spin for ruleta fallback
-
+// Bomba = auto-confirmación siempre. Solo la llama finishSpin en el cliente que giró.
 async function saveBombWinner(winner){
-  if(!winner || !currentRoomId || !_currentSpinData) return;
+  if(!winner || !currentRoomId) return;
+  _isSpinner = false; // evita que autoConfirmWinner escriba una segunda entrada
   const tmrw = getTaskDueDate();
   // Check not already written
   const exists = state.history.find(h=>!h.reverted && h.facilitationDate===tmrw && h.memberId===winner.id);
@@ -4034,7 +4056,7 @@ async function saveBombWinner(winner){
   const msg=document.getElementById('confirmedMsg');
   if(msg){
     msg.style.cssText='display:block;text-align:center;padding:10px 12px;background:rgba(16,185,129,.1);border-radius:8px;font-size:12px;color:var(--success);margin-top:10px;line-height:1.6;';
-    msg.innerHTML='✓ <strong style="color:white">'+winner.name+'</strong> fue asignado para el '+fmtDate(tmrw)+'.'
+    msg.innerHTML='✓ <strong style="color:white">'+escHtml(winner.name)+'</strong> fue asignado para el '+fmtDate(tmrw)+'.'
       +(_fd>0?'<br>No participará los próximos <strong style="color:white">'+_fd+' día'+(_fd!==1?'s':'')+'</strong>. Volverá el <strong style="color:white">'+fmtDate(availDate)+'</strong>.':'');
   }
   showToast('🔒 '+winner.name+' fue asignado automáticamente.');
@@ -4371,10 +4393,41 @@ function goToRoomFromReg(){
 window.goToRoomFromReg=goToRoomFromReg;
 
 // ===== DATES =====
-function today(){return new Date().toISOString().slice(0,10);}
-function tomorrow(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().slice(0,10);}
-function dateOffset(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+// Fechas YYYY-MM-DD en hora LOCAL (toISOString es UTC: en Latam adelanta el día desde las ~19-21h)
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function today(){return ymd(new Date());}
+function tomorrow(){const d=new Date();d.setDate(d.getDate()+1);return ymd(d);}
+function dateOffset(n){const d=new Date();d.setDate(d.getDate()+n);return ymd(d);}
 function fmtDate(str){return new Date(str+'T12:00:00').toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});}
+
+// ===== DÍAS HÁBILES =====
+// workDays: números de getDay() (0=domingo … 6=sábado). Sin configurar → lunes a viernes.
+const DEFAULT_WORK_DAYS=[1,2,3,4,5];
+function normalizeWorkDays(v){
+  const arr=Array.isArray(v)?v:(v&&typeof v==='object'?Object.values(v):null); // Firebase puede devolver objeto
+  const days=arr?[...new Set(arr.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<=6))].sort():[];
+  return days.length?days:[...DEFAULT_WORK_DAYS];
+}
+function getRoomWorkDays(){ return normalizeWorkDays(currentRoomData?.workDays); }
+function isWorkDay(str){ return getRoomWorkDays().includes(new Date(str+'T12:00:00').getDay()); }
+// n-ésimo día hábil después (n>0) o antes (n<0) de str
+function addWorkDays(str,n){
+  const d=new Date(str+'T12:00:00'), step=n<0?-1:1;
+  let left=Math.abs(n);
+  while(left>0){ d.setDate(d.getDate()+step); if(isWorkDay(ymd(d))) left--; }
+  return ymd(d);
+}
+function nextWorkDay(str){ return addWorkDays(str||today(),1); }
+// Día libre (1..freeDays) en el que está hoy alguien que facilitó el día `facDate`, o 0 si ya no.
+// Solo cuentan días hábiles; un día no hábil muestra el estado del próximo día hábil.
+function freeDayIndex(facDate){
+  const fd=getRoomFreeDays(), tod=today();
+  const effToday=isWorkDay(tod)?tod:nextWorkDay(tod);
+  if(fd<=0 || facDate>=effToday) return 0;
+  let k=0, d=facDate;
+  while(d<effToday){ d=addWorkDays(d,1); k++; if(k>fd) return 0; }
+  return k;
+}
 function getRoomRequireOnline(){ return currentRoomData?.requireOnline === true; } // default: false (no requiere online)
 function getRoomFreeDays(){ const v=currentRoomData?.freeDays; return (v==null)?2:Math.max(0,parseInt(v)||0); }
 function getRoomMinParticipants(){ const v=currentRoomData?.minParticipants; return Math.max(2, (v==null)?2:parseInt(v)||2); }
@@ -4382,15 +4435,13 @@ function getRoomDueDays(){ const v=currentRoomData?.dueDays; return (v==null)?0:
 function getTaskDueDate(){
   const mode=currentRoomData?.dueMode||'today';
   if(mode==='today') return today();
-  if(mode==='tomorrow'){ const d=new Date(); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10); }
+  if(mode==='tomorrow') return nextWorkDay(today());
   if(mode==='custom' && currentRoomData?.dueCustomDate) return currentRoomData.dueCustomDate;
   // fallback
   return today();
 }
 function availableAgainDate(fd){
-  const d=new Date(fd+'T12:00:00');
-  d.setDate(d.getDate() + getRoomFreeDays() + 1);
-  return d.toISOString().slice(0,10);
+  return addWorkDays(fd, getRoomFreeDays() + 1);
 }
 
 // ===== STATUS =====
@@ -4399,20 +4450,9 @@ function getTodayConfirmed(){
   return state.history.find(h=>h.type==='assigned'&&!h.reverted&&h.sortDate===today()&&!h.reverted);
 }
 function getMemberStatus(id, fbKey){
-  const tmrw=tomorrow(),tod=today();
   // If room doesn't require online, treat everyone as online for status purposes
   if(getRoomRequireOnline() && !isMemberOnline(fbKey||id)) return 'offline';
-  if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tod&&h.type==='assigned'&&!h.reverted)) return 'facilitating_today';
-  if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='assigned'&&!h.reverted)) return 'assigned_tomorrow';
-  if(state.history.find(h=>h.memberId===id&&h.facilitationDate===tmrw&&h.type==='unavailable'&&!h.reverted)) return 'unavailable_tomorrow';
-  // Días libres dinámicos según configuración de la sala
-  const fd=getRoomFreeDays();
-  for(let i=1;i<=fd;i++){
-    const dayStr=dateOffset(-i);
-    if(state.history.find(h=>h.memberId===id&&h.facilitationDate===dayStr&&h.type==='assigned'&&!h.reverted))
-      return 'free_day'+i;
-  }
-  return 'eligible';
+  return getMemberStatusBase(id, fbKey);
 }
 function getEligible(){
   if(!getRoomRequireOnline() && _manualParticipants !== null){
@@ -4501,7 +4541,9 @@ function generateQROnCanvas(canvas,url){
 let spinning=false, currentAngle=0;
 let _lastSpinTs=0;
 let _isSpinner=false; // true solo en el cliente que inició el giro
-let _spinResultShown=false; // evita que safety timeout y animación muestren el resultado dos veces
+let _mySpinTs=0; // startTs del último giro iniciado por este cliente
+let _finishedSpinTs=null; // startTs del último giro cuyo resultado ya se mostró (ver finishSpin)
+let _spinSafetyTimer=null;
 
 let _wheelWinnerFbKey = null; // set after spin to highlight winner
 let _wheelLastEligible = null; // snapshot of eligible list at spin time
@@ -4610,6 +4652,12 @@ function refreshLockState(){
   }
   lB.classList.remove('show');
   const mmTitle=document.getElementById('minMembersTitle');
+  if(!isWorkDay(today())){
+    spinBtn.disabled=true; tB.style.display='none'; mB.classList.add('show');
+    if(mmTitle) mmTitle.textContent='📅 Hoy no es día hábil';
+    document.getElementById('minMembersSub').textContent=`El próximo sorteo es el ${fmtDate(nextWorkDay(today()))}`;
+    return;
+  }
   if(!requireOnlineMode){
     // Mode "todos los miembros": check selected participants
     const selectedCount = onlineEligible.length; // getEligible() already uses manual selection
@@ -4636,7 +4684,7 @@ function refreshLockState(){
     spinBtn.disabled=true;
     const fac=getTodayFacilitator();
     if(fac){
-      tB.innerHTML=`Solo <strong>${fac.name}</strong> puede girar hoy`;
+      tB.innerHTML=`Solo <strong>${escHtml(fac.name)}</strong> puede girar hoy`;
     } else {
       tB.innerHTML='El ganador será asignado para la próxima sesión';
     }
@@ -4644,11 +4692,13 @@ function refreshLockState(){
     mB.classList.remove('show');
     return;
   }
-  spinBtn.disabled=false;
+  spinBtn.disabled=spinning; // presencia/historial pueden llegar a mitad de un giro
   const _resolvedMode=getRoomGameMode(); // resolves 'random' to actual mode
   tB.innerHTML='El ganador será asignado para la próxima sesión';
   tB.style.display='block';mB.classList.remove('show');
-  if(_resolvedMode && _resolvedMode!=='random') switchGameUI(_resolvedMode);
+  // No reiniciar el tablero durante la animación ni mientras se muestra un resultado
+  const _resultShown=document.getElementById('winnerCard')?.classList.contains('show');
+  if(_resolvedMode && _resolvedMode!=='random' && !spinning && !_resultShown) switchGameUI(_resolvedMode);
   refreshParticipantSelector();
 }
 
@@ -4659,6 +4709,7 @@ function spinRoulette(){
     return;
   }
   if(getTodayConfirmed()){showToast('🔒 Ya hay un seleccionado para este turno.');return;}
+  if(!isWorkDay(today())){showToast(`📅 Hoy no es día hábil. Próximo sorteo: ${fmtDate(nextWorkDay(today()))}`);return;}
   const eligible=getEligible();
   const minP2=getRoomMinParticipants();
   if(eligible.length<minP2){showToast(`⚠ Necesitás al menos ${minP2} participantes en línea.`);return;}
@@ -4723,32 +4774,30 @@ function spinRoulette(){
     winnerFbKey: winnerMember.fbKey || null,
     winnerName: winnerMember.name || null,
     winnerMemberId: winnerMember.id || null,
-    eligibleSnapshot:eligible.map(m=>({fbKey:m.fbKey,id:m.id,name:m.name,emoji:m.emoji,color:m.color,image:m.image||null}))
+    // Firebase rechaza undefined en cualquier nivel: miembros sin emoji/color (ej. con foto) usan null
+    eligibleSnapshot:eligible.map(m=>({fbKey:m.fbKey,id:m.id??null,name:m.name??'',emoji:m.emoji||null,color:m.color||null,image:m.image||null}))
   };
   // Guardar globalmente ANTES de escribir en Firebase
   _currentSpinData = spinData;
   _isSpinner = true;
-  _spinResultShown = false;
-  set(ref(db,'roulette/'+currentRoomId), spinData);
-  // Safety timeout: si Firebase no responde y spinning queda trabado, auto-reset.
-  // Para bomba: la animación dura 8s fijos + 800ms explosión, así que usar 11s de buffer.
-  const _safetyDelay = getRoomGameMode() === 'bomba' ? 11000 : dur + 2000;
-  setTimeout(()=>{
-    if(spinning && !_spinResultShown){
-      spinning=false;
-      _spinResultShown=true;
-      const _safeBtn=document.getElementById('spinBtn');
-      if(_safeBtn){_safeBtn.disabled=false;_safeBtn.style.opacity='';}
-      // Actualizar rueda con el ganador correcto antes de mostrar el panel
-      _wheelWinnerFbKey = spinData.winnerFbKey || null;
-      _wheelLastEligible = spinData.eligibleSnapshot ? [...spinData.eligibleSnapshot] : null;
-      currentAngle = spinData.finalAngle || (spinData.startAngle + spinData.totalAngle);
-      drawWheel(currentAngle);
-      set(ref(db,'roulette/'+currentRoomId),{spinning:false}).catch(()=>{});
-      stopBgMusic(); launchConfetti(); playWinnerFanfare();
-      showRemoteWinner(spinData, spinData.eligibleSnapshot||null);
-    }
-  }, _safetyDelay);
+  _mySpinTs = startTs;
+  try{
+    set(ref(db,'roulette/'+currentRoomId), spinData).catch(e=>console.error('Error guardando el giro:',e));
+  }catch(e){
+    // Error de validación (síncrono): no dejar el giro trabado con el botón deshabilitado
+    console.error('No se pudo iniciar el giro:',e);
+    spinning=false; _isSpinner=false; _mySpinTs=0;
+    stopBgMusic();
+    if(_sb){_sb.disabled=false;_sb.style.opacity='';}
+    showToast('⚠ No se pudo iniciar el sorteo. Intenta de nuevo.');
+    return;
+  }
+  // Safety timeout: si la animación no termina (Firebase no respondió, pestaña en segundo plano),
+  // cerrar el giro igual. Debe ser mayor que la animación más larga de cada modo
+  // (cartas ~7.3s, bomba 8s + 800ms explosión, slots ~3.9s).
+  const _safetyDelay = {cartas:12000, bomba:13000, slots:8000}[getRoomGameMode()] || dur + 2500;
+  clearTimeout(_spinSafetyTimer);
+  _spinSafetyTimer = setTimeout(()=>finishSpin(spinData, spinData.eligibleSnapshot), _safetyDelay);
 }
 window.spinRoulette=spinRoulette;
 
@@ -4756,21 +4805,14 @@ let _currentSpinData = null; // Store spin data for winner verification
 
 function playRemoteSpin(data){
   _currentSpinData = data; // Save for isCurrentUserWinner
-  const alreadyElapsed=Date.now()-data.startTs;
+  if(data.startTs !== _mySpinTs) _isSpinner = false; // giro de otro cliente: no escribir historial
+  // Usar snapshot de elegibles guardado en Firebase para renderizar igual en todos
+  const remoteEligible = Array.isArray(data.eligibleSnapshot)?data.eligibleSnapshot:data.eligibleSnapshot?Object.values(data.eligibleSnapshot):getEligible();
+  const done = ()=>finishSpin(data, remoteEligible);
 
-  if(alreadyElapsed>=data.duration){
+  if(Date.now()-data.startTs >= data.duration){
     // Llegamos tarde — saltar al ángulo final y mostrar ganador directo
-    currentAngle = data.finalAngle || (data.startAngle+data.totalAngle);
-    _wheelWinnerFbKey = data.winnerFbKey || null;
-    _wheelLastEligible = data.eligibleSnapshot ? [...data.eligibleSnapshot] : null;
-    drawWheel(currentAngle);
-    spinning=false;
-    const _sbL=document.getElementById('spinBtn');
-    if(_sbL){_sbL.disabled=false;_sbL.style.opacity='';}
-    stopBgMusic();
-    launchConfetti();
-    playWinnerFanfare();
-    showRemoteWinner(data, data.eligibleSnapshot||null);
+    done();
     return;
   }
 
@@ -4780,87 +4822,51 @@ function playRemoteSpin(data){
   const _prsAS=document.getElementById('availSection'); if(_prsAS) _prsAS.style.display='none';
   const _prsCM=document.getElementById('confirmedMsg'); if(_prsCM) _prsCM.style.display='none';
 
+  const gameMode=getRoomGameMode();
+  if(gameMode==='cartas'){ renderCardsDeck(remoteEligible, data.winnerFbKey).then(done, done); return; }
+  if(gameMode==='slots'){ stopSlotsOnWinner(data.winnerFbKey, remoteEligible, done); return; }
+  if(gameMode==='bomba'){ startBombGame(remoteEligible, data.winnerFbKey, done); return; }
+
+  // Ruleta — sincronizar ángulo local con el del servidor para que todos vean lo mismo
   const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
   const startA=data.startAngle, totalA=data.totalAngle, dur=data.duration, startTs=data.startTs;
-  const gameMode=getRoomGameMode();
-  // Initialize non-roulette game UIs
-  const remoteElig2=Array.isArray(data.eligibleSnapshot)?data.eligibleSnapshot:data.eligibleSnapshot?Object.values(data.eligibleSnapshot):getEligible();
-  if(gameMode==='cartas'){
-    // Cartas: start card animation immediately — skip the invisible 4200ms wheel loop
-    const winnerM=remoteElig2.find(m=>m.fbKey===data.winnerFbKey)||remoteElig2[0];
-    const _done=()=>{
-      spinning=false;
-      const sb=document.getElementById('spinBtn'); if(sb){sb.disabled=false;sb.style.opacity='';}
-      stopBgMusic(); launchConfetti(); playWinnerFanfare();
-      showRemoteWinner(data, remoteElig2);
-      if(!getRoomRequireOnline()&&winnerM) autoConfirmWinner(winnerM);
-      set(ref(db,'roulette/'+currentRoomId),{spinning:false});
-    };
-    renderCardsDeck(remoteElig2, data.winnerFbKey).then(_done).catch(_done);
-    return;
-  }
-  if(gameMode==='slots'){
-    // Only re-render if track is empty (local spinner already rendered)
-    const track=document.getElementById('slotReelTrack');
-    if(!track||track.children.length===0) renderSlotsReels(remoteElig2);
-    else {
-      // Track already rendered — start animation immediately
-      stopSlotsOnWinner(data.winnerFbKey, remoteElig2);
-      return;
-    }
-  }
-  if(gameMode==='bomba'){ startBombGame(remoteElig2, data.winnerFbKey, dur); return; }
-  // Sincronizar ángulo local con el del servidor para que todos vean lo mismo
   currentAngle = startA;
-
-  // Usar snapshot de elegibles guardado en Firebase para renderizar igual en todos
-  const remoteEligible = Array.isArray(data.eligibleSnapshot)?data.eligibleSnapshot:data.eligibleSnapshot?Object.values(data.eligibleSnapshot):getEligible();
   _wheelLastEligible = [...remoteEligible]; // store for display after spin
 
   function anim(){
-    const el=Date.now()-startTs, p=Math.min(el/dur,1);
+    if(_finishedSpinTs===startTs) return; // ya lo cerró el safety timeout
+    const el=Math.max(0,Date.now()-startTs), p=Math.min(el/dur,1); // max: reloj local atrasado
     currentAngle=startA+totalA*ease(p);
     drawWheelWithEligible(currentAngle, remoteEligible);
-    if(p<1){ requestAnimationFrame(anim); }
-    else{
-      // Asegurar que el ángulo final sea exacto (no acumulación de float errors)
-      currentAngle = data.finalAngle || (startA + totalA);
-      _wheelWinnerFbKey = data.winnerFbKey || null; // highlight winner
-      drawWheel(currentAngle);
-      spinning=false;
-      const _animSB=document.getElementById('spinBtn'); if(_animSB){_animSB.disabled=false;_animSB.style.opacity='';}
-      _currentSpinData = data;
-      const gm=getRoomGameMode();
-      const winnerMember=remoteEligible.find(m=>m.fbKey===data.winnerFbKey)||remoteEligible[0];
-      if(gm==='cartas'){
-        // renderCardsDeck deals cards + flips winner, then .then() fires
-        renderCardsDeck(remoteEligible, data.winnerFbKey).then(()=>{
-          stopBgMusic(); launchConfetti(); playWinnerFanfare();
-          showRemoteWinner(data, remoteEligible);
-          if(!getRoomRequireOnline()&&winnerMember) autoConfirmWinner(winnerMember);
-        }).catch(()=>{
-          stopBgMusic(); launchConfetti(); playWinnerFanfare();
-          showRemoteWinner(data, remoteEligible);
-          if(!getRoomRequireOnline()&&winnerMember) autoConfirmWinner(winnerMember);
-        });
-      } else if(gm==='slots'){
-        // Slots animation runs; winner panel shown inside stopSlotsOnWinner
-        stopSlotsOnWinner(data.winnerFbKey, remoteEligible);
-      } else if(gm==='bomba'){
-        // Bomb: handled in bombExplode callback
-      } else {
-        // Ruleta: show immediately after wheel stops
-        if(!_spinResultShown){
-          _spinResultShown=true;
-          stopBgMusic(); launchConfetti(); playWinnerFanfare();
-          showRemoteWinner(data, remoteEligible);
-        }
-      }
-      // Limpiar estado en Firebase (solo el spinner lo hace para evitar race)
-      set(ref(db,'roulette/'+currentRoomId),{spinning:false});
-    }
+    if(p<1) requestAnimationFrame(anim);
+    else done();
   }
   requestAnimationFrame(anim);
+}
+
+// Cierre único de un giro para todos los modos. Se ejecuta una sola vez por giro (startTs),
+// la llame la animación, el safety timeout o un cliente que llegó tarde.
+function finishSpin(data, eligible){
+  if(!data || _finishedSpinTs===data.startTs) return;
+  _finishedSpinTs = data.startTs;
+  const isMine = data.startTs === _mySpinTs;
+  if(isMine){ clearTimeout(_spinSafetyTimer); _spinSafetyTimer=null; }
+  const elig = Array.isArray(eligible) ? eligible : eligible ? Object.values(eligible) : getEligible();
+  spinning=false;
+  // Asegurar que el ángulo final sea exacto (no acumulación de float errors) y resaltar al ganador
+  currentAngle = data.finalAngle || (data.startAngle + data.totalAngle);
+  _wheelWinnerFbKey = data.winnerFbKey || null;
+  _wheelLastEligible = [...elig];
+  drawWheel(currentAngle);
+  _currentSpinData = data;
+  const sb=document.getElementById('spinBtn'); if(sb){sb.disabled=false;sb.style.opacity='';}
+  stopBgMusic(); launchConfetti(); playWinnerFanfare();
+  if(isMine && getRoomGameMode()==='bomba'){
+    saveBombWinner(elig.find(m=>m.fbKey===data.winnerFbKey)||elig[0]);
+  }
+  showRemoteWinner(data, elig);
+  // Limpiar estado en Firebase (solo el que giró, para evitar races)
+  if(isMine && currentRoomId) set(ref(db,'roulette/'+currentRoomId),{spinning:false}).catch(()=>{});
 }
 
 function isCurrentUserWinner(winner, spinData){
@@ -4901,12 +4907,13 @@ function showRemoteWinner(data, remoteEligible){
   const _rwWD=document.getElementById('winnerDate');
   const _rwAS=document.getElementById('availSection');
   if(_rwWC) _rwWC.classList.add('show');
-  if(_rwAV){ _rwAV.innerHTML=winner.image?`<img src="${winner.image}" alt="${winner.name}">`:(winner.emoji||'👤'); if(!winner.image) _rwAV.style.background=winner.color||'#6c63ff'; else _rwAV.style.background=''; }
+  if(_rwAV){ _rwAV.innerHTML=winner.image?`<img src="${escHtml(winner.image)}" alt="${escHtml(winner.name)}">`:escHtml(winner.emoji||'👤'); if(!winner.image) _rwAV.style.background=winner.color||'#6c63ff'; else _rwAV.style.background=''; }
   if(_rwWN) _rwWN.textContent=winner.name;
   const _amIWinner=isCurrentUserWinner(winner, data);
   if(_rwWS) _rwWS.textContent=_amIWinner?'🎯 ¡Te tocó a ti!':(currentRoomData?.purpose||'Fue seleccionado');
   if(_rwWD) _rwWD.textContent=_amIWinner?'Confirma si puedes cumplir con la tarea':'Esperando confirmación del seleccionado...';
-  if(!getRoomRequireOnline()){
+  // Bomba = auto-confirmación siempre (saveBombWinner), aunque la sala pida confirmación
+  if(!getRoomRequireOnline() || getRoomGameMode()==='bomba'){
     if(_rwAS) _rwAS.style.display='none';
     if(_rwWS) _rwWS.textContent='🎯 ¡Fue seleccionado!';
     if(_rwWD) _rwWD.textContent='Asignado automáticamente ✓';
@@ -4931,7 +4938,7 @@ function showWinner(m){
   const _swWD=document.getElementById('winnerDate');
   const _swAS=document.getElementById('availSection');
   if(_swWC) _swWC.classList.add('show');
-  if(_swAV){ _swAV.innerHTML=m.image?`<img src="${m.image}" alt="${m.name}">`:(m.emoji||'👤'); if(!m.image)_swAV.style.background=m.color||'#6c63ff';else _swAV.style.background=''; }
+  if(_swAV){ _swAV.innerHTML=m.image?`<img src="${escHtml(m.image)}" alt="${escHtml(m.name)}">`:escHtml(m.emoji||'👤'); if(!m.image)_swAV.style.background=m.color||'#6c63ff';else _swAV.style.background=''; }
   if(_swWN) _swWN.textContent=m.name;
   const _iW=isCurrentUserWinner(m, _currentSpinData);
   if(_swWS) _swWS.textContent=_iW?'🎯 ¡Te tocó a ti!':(currentRoomData?.purpose||'Fue seleccionado');
@@ -4987,7 +4994,7 @@ async function autoConfirmWinner(winner){
   const _fd = getRoomFreeDays();
   if(msg){
     msg.style.cssText='display:block;text-align:center;padding:10px 12px;background:rgba(16,185,129,.1);border-radius:8px;font-size:12px;color:var(--success);margin-top:10px;line-height:1.6;';
-    msg.innerHTML=`✓ <strong style="color:white">${winner.name}</strong> fue asignado para el ${fmtDate(tmrw)}.${currentRoomData?.purpose?' Para: <em>'+currentRoomData.purpose+'</em>':''}<br>${_fd>0?`No participará los próximos <strong style="color:white">${_fd} día${_fd!==1?'s':''}</strong>. Volverá el <strong style="color:white">${fmtDate(availDate)}</strong>.`:'Puede participar en el próximo sorteo.'}`;
+    msg.innerHTML=`✓ <strong style="color:white">${escHtml(winner.name)}</strong> fue asignado para el ${fmtDate(tmrw)}.${currentRoomData?.purpose?' Para: <em>'+escHtml(currentRoomData.purpose)+'</em>':''}<br>${_fd>0?`No participará los próximos <strong style="color:white">${_fd} día${_fd!==1?'s':''}</strong>. Volverá el <strong style="color:white">${fmtDate(availDate)}</strong>.`:'Puede participar en el próximo sorteo.'}`;
   }
   showToast(`🔒 ${winner.name} fue asignado automáticamente.`);
   // Reset participant selector for next spin
@@ -5005,7 +5012,7 @@ async function confirmFacilitator(){
   const _fd=getRoomFreeDays();
   if(msg){
     msg.style.cssText='display:block;text-align:center;padding:10px 12px;background:rgba(16,185,129,.1);border-radius:8px;font-size:12px;color:var(--success);margin-top:10px;line-height:1.6;';
-    msg.innerHTML=`✓ <strong style="color:white">${m.name}</strong> fue seleccionado el ${fmtDate(tmrw)}.${currentRoomData?.purpose?' Para: <em>'+currentRoomData.purpose+'</em>':''}<br>${_fd>0?`No participará los próximos <strong style="color:white">${_fd} día${_fd!==1?'s':''}</strong>. Volverá al sorteo el <strong style="color:white">${fmtDate(availDate)}</strong>.`:'Puede participar en el próximo sorteo.'}`;
+    msg.innerHTML=`✓ <strong style="color:white">${escHtml(m.name)}</strong> fue seleccionado el ${fmtDate(tmrw)}.${currentRoomData?.purpose?' Para: <em>'+escHtml(currentRoomData.purpose)+'</em>':''}<br>${_fd>0?`No participará los próximos <strong style="color:white">${_fd} día${_fd!==1?'s':''}</strong>. Volverá al sorteo el <strong style="color:white">${fmtDate(availDate)}</strong>.`:'Puede participar en el próximo sorteo.'}`;
   }
   showToast(`🔒 Sorteo cerrado. ${m.name} fue seleccionado.`);
 }
@@ -5014,7 +5021,7 @@ window.confirmFacilitator=confirmFacilitator;
 async function declineFacilitator(){
   if(!currentWinner)return;
   const m=currentWinner;
-  await fbAdd('history/'+currentRoomId,{memberId:m.id,memberName:m.name,memberEmoji:m.emoji,memberImage:m.image,memberColor:m.color,sortDate:today(),facilitationDate:getTaskDueDate(),type:'unavailable',reverted:false,dateLabel:fmtDate(tomorrow()),createdAt:Date.now()});
+  await fbAdd('history/'+currentRoomId,{memberId:m.id,memberName:m.name,memberEmoji:m.emoji,memberImage:m.image,memberColor:m.color,sortDate:today(),facilitationDate:getTaskDueDate(),type:'unavailable',reverted:false,dateLabel:fmtDate(getTaskDueDate()),createdAt:Date.now()});
   currentWinner=null;
   const _dfAS=document.getElementById('availSection'); if(_dfAS) _dfAS.style.display='none';
   const _dfWC=document.getElementById('winnerCard'); if(_dfWC) _dfWC.classList.remove('show');
@@ -5123,7 +5130,7 @@ function renderHistoryPage(){
   const hist=state.history.filter(h=>h.type==='assigned');
   if(!hist.length){list.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-  const tmrw=tomorrow(),tod=today();
+  const tmrw=nextWorkDay(today()),tod=today();
   const shown=hist.slice(0,_histShown);
   const remaining=hist.length-_histShown;
   list.innerHTML=shown.map(h=>{

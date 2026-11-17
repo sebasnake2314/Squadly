@@ -28,6 +28,8 @@ export interface RoomMeta {
   dueMode?: DueMode
   dueCustomDate?: string | null
   freeDays?: number
+  /** Días hábiles (getDay(): 0=domingo … 6=sábado). Sin definir → lunes a viernes */
+  workDays?: number[]
   minParticipants?: number
   requireOnline?: boolean
   roomCode?: string

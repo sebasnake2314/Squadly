@@ -5,6 +5,8 @@
 import { useState, useRef, useEffect } from 'react'
 import type { User } from 'firebase/auth'
 import { createRoom } from '../../services/rooms'
+import { DEFAULT_WORK_DAYS } from '../../utils/dates'
+import { WorkDaysPicker } from '../common/WorkDaysPicker'
 import type { GameMode, MusicType, RoomType, DueMode } from '../../types'
 
 const ROOM_ICONS = [
@@ -32,6 +34,7 @@ export function CreateRoomModal({ user, onCreated, onClose }: Props) {
   const [type, setType] = useState<RoomType>('ruleta')
   const [gameMode, setGameMode] = useState<GameMode>('ruleta')
   const [freeDays, setFreeDays] = useState(2)
+  const [workDays, setWorkDays] = useState<number[]>([...DEFAULT_WORK_DAYS])
   const [minParticipants, setMinParticipants] = useState(2)
   const [requireOnline, setRequireOnline] = useState(false)
   const [dueMode, setDueMode] = useState<DueMode>('tomorrow')
@@ -59,6 +62,7 @@ export function CreateRoomModal({ user, onCreated, onClose }: Props) {
         requireOnline,
         minParticipants,
         freeDays,
+        workDays,
         dueMode,
         dueDays: 1,
         dueCustomDate: null,
@@ -179,6 +183,9 @@ export function CreateRoomModal({ user, onCreated, onClose }: Props) {
                   <button type="button" className="num-btn" onClick={() => setFreeDays(d => Math.min(14, d + 1))} disabled={saving}>+</button>
                 </div>
               </div>
+
+              {/* Días hábiles */}
+              <WorkDaysPicker value={workDays} onChange={setWorkDays} disabled={saving} />
 
               {/* Mínimo participantes */}
               <div className="form-label">

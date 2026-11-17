@@ -5,8 +5,8 @@
 import { useReducer, useCallback } from 'react'
 import { pickRandomWinner, saveWinner, setSpinningState } from '../../services/game'
 import { startMusic, stopMusic } from '../../services/music'
-import { getEligible, getTodayFacilitator, canCurrentUserSpin } from '../../services/status'
-import { getRoomMinParticipants } from '../../utils/dates'
+import { getEligible, getTodayFacilitator, canCurrentUserSpin, isTodayWorkDay } from '../../services/status'
+import { getRoomMinParticipants, getRoomWorkDays, nextWorkDay, today, fmtDate } from '../../utils/dates'
 import { WinnerOverlay } from './WinnerOverlay'
 import { RouletteCanvas } from './RouletteCanvas'
 import type { Member } from '../../types'
@@ -70,8 +70,10 @@ export function GameTab({ ctx, roomId, isAdmin }: Props) {
   const minPart = getRoomMinParticipants(ctx.room.minParticipants)
   const gameMode = ctx.room.gameMode ?? 'ruleta'
   const isConvocatoria = ctx.room.type === 'convocatoria'
+  const workDayToday = isTodayWorkDay(ctx.room)
 
   const handleSpin = useCallback(async () => {
+    if (!workDayToday) return
     if (eligible.length < minPart) {
       dispatch({ type: 'ERROR', message: `Se necesitan al menos ${minPart} participantes elegibles para sortear.` })
       return
@@ -81,7 +83,7 @@ export function GameTab({ ctx, roomId, isAdmin }: Props) {
     dispatch({ type: 'START', winner: picked, spinMembers: [...eligible] })
     await setSpinningState(roomId, true)
     startMusic(ctx.room.musicType ?? 'none')
-  }, [eligible, minPart, roomId, ctx.room.musicType])
+  }, [eligible, minPart, roomId, ctx.room.musicType, workDayToday])
 
   const handleAnimationDone = useCallback(() => {
     stopMusic()
@@ -173,11 +175,17 @@ export function GameTab({ ctx, roomId, isAdmin }: Props) {
 
           {state.error && <div className="form-error" style={{ marginTop: 12 }}>{state.error}</div>}
 
+          {!workDayToday && (
+            <div style={{ fontSize: 12, color: 'var(--text3)', textAlign: 'center', marginTop: 12 }}>
+              Hoy no es dia habil. El proximo sorteo es el {fmtDate(nextWorkDay(today(), getRoomWorkDays(ctx.room.workDays)))}.
+            </div>
+          )}
+
           {canSpin && !todayFacilitator && (
             <button
               className="spin-btn"
               onClick={handleSpin}
-              disabled={eligible.length < minPart}
+              disabled={eligible.length < minPart || !workDayToday}
             >
               {isConvocatoria ? 'Convocar' : 'Sortear'}
             </button>

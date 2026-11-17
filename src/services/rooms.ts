@@ -33,6 +33,7 @@ export interface CreateRoomParams {
   requireOnline: boolean
   minParticipants: number
   freeDays: number
+  workDays: number[]
   dueMode: DueMode
   dueDays: number
   dueCustomDate?: string | null
@@ -62,6 +63,7 @@ export async function createRoom(params: CreateRoomParams): Promise<string> {
       requireOnline: params.requireOnline,
       minParticipants: params.minParticipants,
       freeDays: params.freeDays,
+      workDays: params.workDays,
       dueMode: params.dueMode,
       dueDays: params.dueDays,
       dueCustomDate: params.dueCustomDate ?? null,
@@ -79,6 +81,7 @@ export async function createRoom(params: CreateRoomParams): Promise<string> {
         requireOnline: params.requireOnline,
         minParticipants: params.minParticipants,
         freeDays: params.freeDays,
+        workDays: params.workDays,
         dueMode: params.dueMode,
         dueDays: params.dueDays,
         dueCustomDate: params.dueCustomDate ?? null,
@@ -99,6 +102,7 @@ export interface UpdateRoomConfigParams {
   purpose: string
   minParticipants: number
   freeDays: number
+  workDays: number[]
   dueMode: DueMode
   dueDays: number
   dueCustomDate?: string | null
@@ -113,6 +117,7 @@ export async function updateRoomConfig(params: UpdateRoomConfigParams): Promise<
     purpose: params.purpose,
     minParticipants: params.minParticipants,
     freeDays: params.freeDays,
+    workDays: params.workDays,
     dueMode: params.dueMode,
     dueDays: params.dueDays,
     dueCustomDate: params.dueCustomDate ?? null,

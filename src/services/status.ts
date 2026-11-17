@@ -3,7 +3,7 @@
  * Todas las funciones reciben el estado como parámetro en lugar de leer globals.
  */
 import type { Member, HistoryEntry, PresenceEntry, MemberStatus, RoomMeta } from '../types'
-import { today, tomorrow, dateOffset, getRoomFreeDays } from '../utils/dates'
+import { today, nextWorkDay, isWorkDay, freeDayIndex, getRoomFreeDays, getRoomWorkDays } from '../utils/dates'
 import { isMemberOnline } from './presence'
 
 // ---- Tipos de contexto ----
@@ -43,49 +43,45 @@ function getMemberStatusBase(
   ctx: Pick<RoomContext, 'history' | 'room'>,
 ): MemberStatus {
   const tod = today()
-  const tmrw = tomorrow()
-  const { history } = ctx
-  const freeDays = getRoomFreeDays(ctx.room.freeDays)
+  const next = nextWorkDay(tod, getRoomWorkDays(ctx.room.workDays)) // "mañana" = próximo día hábil
+  const mine = ctx.history.filter(h => h.memberId === memberId && !h.reverted)
 
-  if (history.find(h => h.memberId === memberId && h.facilitationDate === tod && h.type === 'assigned' && !h.reverted))
+  if (mine.find(h => h.facilitationDate === tod && h.type === 'assigned'))
     return 'facilitating_today'
 
-  if (history.find(h => h.memberId === memberId && h.facilitationDate === tmrw && h.type === 'assigned' && !h.reverted))
+  if (mine.find(h => h.facilitationDate === next && h.type === 'assigned'))
     return 'assigned_tomorrow'
 
-  if (history.find(h => h.memberId === memberId && h.facilitationDate === tmrw && h.type === 'unavailable' && !h.reverted))
+  if (mine.find(h => h.facilitationDate === next && h.type === 'unavailable'))
     return 'unavailable_tomorrow'
 
-  if (freeDays > 0) {
-    const assignedDates = new Set<string>()
-    for (const h of history) {
-      if (h.memberId === memberId && h.type === 'assigned' && !h.reverted)
-        assignedDates.add(h.facilitationDate)
-    }
-    for (let i = 1; i <= freeDays; i++) {
-      if (assignedDates.has(dateOffset(-i))) return `free_day${i}` as MemberStatus
-    }
-  }
-
-  return 'eligible'
+  const freeDay = getMemberFreeDayIndex(memberId, ctx)
+  return freeDay ? `free_day${freeDay}` as MemberStatus : 'eligible'
 }
 
-/** Devuelve el número de día libre (1-N) o null si no está en días libres */
+/**
+ * Devuelve el número de día libre (1-N) o null si no está en días libres.
+ * Solo cuentan días hábiles.
+ */
 export function getMemberFreeDayIndex(
   memberId: string,
   ctx: Pick<RoomContext, 'history' | 'room'>,
 ): number | null {
   const freeDays = getRoomFreeDays(ctx.room.freeDays)
   if (freeDays === 0) return null
-  const assignedDates = new Set<string>()
+  const workDays = getRoomWorkDays(ctx.room.workDays)
+  let best = 0
   for (const h of ctx.history) {
-    if (h.memberId === memberId && h.type === 'assigned' && !h.reverted)
-      assignedDates.add(h.facilitationDate)
+    if (h.memberId !== memberId || h.type !== 'assigned' || h.reverted) continue
+    const k = freeDayIndex(h.facilitationDate, freeDays, workDays)
+    if (k && (!best || k < best)) best = k
   }
-  for (let i = 1; i <= freeDays; i++) {
-    if (assignedDates.has(dateOffset(-i))) return i
-  }
-  return null
+  return best || null
+}
+
+/** ¿Hoy es día hábil en la sala? (en días no hábiles no se sortea) */
+export function isTodayWorkDay(room: Pick<RoomMeta, 'workDays'>): boolean {
+  return isWorkDay(today(), getRoomWorkDays(room.workDays))
 }
 
 /** Miembros elegibles para el sorteo */
