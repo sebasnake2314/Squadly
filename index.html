@@ -10,9 +10,6 @@
 :root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--surface:#1e1e2e;--surface2:#252538;--border:rgba(120,120,200,0.15);--border2:rgba(120,120,200,0.3);--accent:#6c63ff;--accent2:#a78bfa;--accent3:#f59e0b;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--success:#10b981;--danger:#ef4444;--warn:#f59e0b;--gold:#ffd700;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
-#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
-.star{position:absolute;background:white;border-radius:50%;animation:twinkle linear infinite;}
-@keyframes twinkle{0%,100%{opacity:.1}50%{opacity:.8}}
 .sync-bar{position:fixed;top:0;left:0;right:0;z-index:50;height:3px;}
 .sync-bar.syncing{background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent));background-size:200%;animation:syncAnim 1s linear infinite;}
 .sync-bar.error{background:var(--danger);}
@@ -755,6 +752,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="user-bar">
         <div class="user-avatar"><img id="userAvatar" src="" alt="" referrerpolicy="no-referrer" onerror="if(this.getAttribute('src'))this.style.display='none'"></div>
         <div class="user-name" id="userName"></div>
+        <button class="guide-btn" data-bg-trigger onclick="SquadlyBg.openPicker(this)" title="Elegir fondo" aria-label="Elegir fondo">🎨</button>
         <a class="guide-btn" href="guide.html" title="Guía de usuario">📖 Guía</a>
         <button class="logout-btn" onclick="signOut()">Salir</button>
       </div>
@@ -790,6 +788,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
     <div class="app-header-right">
       <div class="date-badge" id="currentDate"></div>
+      <button class="guide-btn" data-bg-trigger onclick="SquadlyBg.openPicker(this)" title="Elegir fondo" aria-label="Elegir fondo">🎨</button>
       <!-- Admin: chip con foto Google + nombre + chip de participante si aplica -->
       <div class="user-bar" id="headerAdminBar" style="display:none;align-items:center;gap:10px;">
         <!-- Chip de participante (si el admin se registró como miembro) -->
@@ -1283,6 +1282,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       </div>
     </div>
 
+    <div class="config-section">
+      <div class="config-section-title">Fondo de la sala</div>
+      <select id="cfgBackground" style="width:100%;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;font-family:inherit;"></select>
+      <div class="config-current">Lo ven quienes no eligieron su propio fondo con 🎨, por ejemplo los invitados nuevos</div>
+    </div>
+
     <!-- Solo sorteo -->
     <div class="config-section" id="cfgSorteoSection1">
       <div class="config-section-title">Modo de selección</div>
@@ -1481,6 +1486,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <div class="toast" id="toast"></div>
 
+<script src="backgrounds.js"></script>
 <script src="firebase-config.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -1629,6 +1635,7 @@ function routeToProfileChoice(roomId){
 
 function showAuthPage(){
   hideAll(); document.getElementById('authPage').style.display='block';
+  window.SquadlyBg?.setRoomDefault(null);
   setSyncStatus('live');
 }
 
@@ -1766,6 +1773,7 @@ function isMemberOnline(memberId){
 // ===== LOBBY =====
 function showLobbyView(){
   hideAll(); document.getElementById('lobbyView').style.display='block';
+  window.SquadlyBg?.setRoomDefault(null); // fuera de una sala: elección propia o el por defecto
   document.getElementById('lobbyDate').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   if(currentUser){
     document.getElementById('userName').textContent=currentUser.displayName||currentUser.email;
@@ -1910,6 +1918,16 @@ function toggleWorkDay(day,ctx){
   renderWorkDays(ctx);
 }
 window.toggleWorkDay=toggleWorkDay;
+
+// Fondo de la sala (lo ven quienes no eligieron uno propio con 🎨) — opciones de backgrounds.js
+function renderBackgroundSelect(value){
+  const sel=document.getElementById('cfgBackground'); if(!sel) return;
+  const bg=window.SquadlyBg;
+  const opts=bg?[...bg.OPTIONS, bg.RANDOM]:[];
+  sel.innerHTML='<option value="">Sin definir (Estrellas fugaces)</option>'
+    +opts.map(o=>`<option value="${o.id}">${o.icon} ${o.name}${o.id==='aleatorio'?' (uno por día)':''}</option>`).join('');
+  sel.value=opts.some(o=>o.id===value)?value:'';
+}
 
 let selectedDueMode='today';
 function selectDueMode(mode,el){
@@ -2120,6 +2138,7 @@ function updateGuestHeaderBtns(){
 }
 function applyRoomHeader(){
   if(!currentRoomData) return;
+  window.SquadlyBg?.setRoomDefault(currentRoomData.background);
   const _parts=currentRoomData.name.trim().split(/\s+/);
   const _nameHtml=_parts.length===1
     ? `<span style="color:var(--accent2)">${_parts[0]}</span>`
@@ -2385,6 +2404,7 @@ function openRoomConfig(){
   document.getElementById('cfgMin').value = currentRoomData.minParticipants || 2;
   document.getElementById('cfgFreeDays').value = currentRoomData.freeDays ?? 2;
   cfgWorkDays = getRoomWorkDays(); renderWorkDays('cfg');
+  renderBackgroundSelect(currentRoomData.background);
   // Pre-fill requireOnline
   const _curOnline = currentRoomData.requireOnline !== false;
   _cfgOnline = _curOnline; // sincronizar variable de guardado con el valor actual de la sala
@@ -2473,7 +2493,8 @@ async function saveRoomConfig(){
 
   setSyncStatus('syncing');
   const requireOnline = _cfgOnline !== false;
-  const updates = {purpose, minParticipants, freeDays, workDays: cfgWorkDays, dueMode, dueDays, dueCustomDate: dueCustomDate||null, requireOnline, gameMode: cfgGameMode||'ruleta', musicType: cfgMusicType||'none'};
+  const background = document.getElementById('cfgBackground').value || null;
+  const updates = {purpose, minParticipants, freeDays, workDays: cfgWorkDays, background, dueMode, dueDays, dueCustomDate: dueCustomDate||null, requireOnline, gameMode: cfgGameMode||'ruleta', musicType: cfgMusicType||'none'};
   // Update in rooms/{uid}/{roomId}
   await update(ref(db,'rooms/'+currentUser.uid+'/'+currentRoomId), updates);
   // Update in roomsMeta/{roomId}
@@ -4237,6 +4258,7 @@ function fetchRoomMeta(roomId){
 
 function applyRegRoomHeader(){
   if(!regRoomData) return;
+  window.SquadlyBg?.setRoomDefault(regRoomData.background);
   document.getElementById('regRoomIcon').textContent=regRoomData.icon||'🎰';
   document.getElementById('regRoomTitle').innerHTML='Bienvenido a <span style="color:var(--accent2)">'+regRoomData.name+'</span>';
   document.getElementById('regRoomSubtitle').textContent='Solicitá el PIN de seguridad al Admin para acceder';
@@ -5253,7 +5275,8 @@ function showPage(page,el){
 window.showPage=showPage;
 
 // ===== STARS / TOAST / CONFETTI =====
-function createStars(){const c=document.getElementById('stars');c.innerHTML='';for(let i=0;i<70;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2+.5;s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;`;c.appendChild(s);}}
+// Fondo animado: lo pinta backgrounds.js según la elección de cada persona (botón 🎨)
+function createStars(){ window.SquadlyBg?.render(); } // si backgrounds.js no cargó, la app sigue sin fondo
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
 function launchConfetti(){const cols=['#6c63ff','#f59e0b','#10b981','#a78bfa','#ffd700','#ef4444'];for(let i=0;i<50;i++)setTimeout(()=>{const p=document.createElement('div');p.className='confetti-piece';p.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${cols[Math.floor(Math.random()*cols.length)]};transform:rotate(${Math.random()*360}deg);animation:fall ${1.5+Math.random()}s ease-in forwards;`;document.body.appendChild(p);setTimeout(()=>p.remove(),3000);},i*40);}
 window.showToast=showToast;window.launchConfetti=launchConfetti;

@@ -18,10 +18,6 @@
 html{scroll-behavior:smooth;}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.6;}
 
-/* STARS */
-#stars{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
-.star{position:absolute;background:white;border-radius:50%;animation:twinkle linear infinite;}
-@keyframes twinkle{0%,100%{opacity:.05}50%{opacity:.4}}
 
 /* HEADER */
 .guide-header{position:sticky;top:0;z-index:50;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;}
@@ -642,6 +638,13 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">
+          ¿Puedo cambiar el fondo de la app?
+          <span class="faq-arrow">▼</span>
+        </button>
+        <div class="faq-a">Sí. Con el botón <strong>🎨</strong> del encabezado (en el lobby y dentro de la sala) elegís entre 10 fondos (<strong>Estrellas fugaces, Grilla retro, Formas flotantes, Degradado, Bokeh, Ondas, Panal, Ruleta gigante, Neón</strong> y <strong>Nieve</strong>) o <strong>Aleatorio</strong>, que pone uno distinto cada día. La elección es solo tuya: se guarda en tu navegador y no cambia lo que ven los demás.<br><br>El admin también puede definir el <strong>fondo de la sala</strong> desde <strong>⚙ Configurar</strong>. Lo ve quien no eligió uno propio, por ejemplo los invitados que entran por primera vez con el link. Si elegiste un fondo y querés volver al de la sala, elegí <strong>🏠 Automático</strong> en el menú 🎨.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
           ¿Puedo tener varias salas?
           <span class="faq-arrow">▼</span>
         </button>
@@ -659,18 +662,10 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
 
 </main>
 
+<script src="backgrounds.js"></script>
 <script>
-// Generar estrellas
-(function(){
-  const c=document.getElementById('stars');
-  for(let i=0;i<60;i++){
-    const s=document.createElement('div');
-    const sz=Math.random()*1.5+0.5;
-    s.className='star';
-    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${3+Math.random()*5}s;animation-delay:${Math.random()*4}s;`;
-    c.appendChild(s);
-  }
-})();
+// Fondo: el mismo que eligió la persona en la app (backgrounds.js)
+SquadlyBg.render();
 
 // FAQ toggle
 function toggleFaq(btn){

@@ -122,6 +122,8 @@ memberLinks/{uid}/{roomId}   ← links Google account to a memberId
 
 **Días hábiles:** `workDays` en `rooms/` y `roomsMeta/` (números de `getDay()`, 0=domingo); sin definir → lunes a viernes. Solo se sortea en días hábiles, los días libres cuentan solo días hábiles, y "mañana" (`assigned_tomorrow`, `dueMode: 'tomorrow'`) es el próximo día hábil. Las fechas `YYYY-MM-DD` son en hora local (`ymd()`), nunca `toISOString()` (UTC). Lógica duplicada en `index.html` (sección DÍAS HÁBILES) y `src/utils/dates.ts`.
 
+**Fondos animados:** `backgrounds.js` (script clásico en la raíz, compartido por `index.html` y `guide.html`) pinta el fondo en `#stars` y tiene el selector 🎨. Prioridad: elección propia (localStorage `sq_bg`) → fondo de la sala (`background` en `rooms/` y `roomsMeta/`, lo define el admin en ⚙ Configurar y se aplica con `SquadlyBg.setRoomDefault()` en `applyRoomHeader`/`applyRegRoomHeader`) → Estrellas fugaces. "Automático" en el menú borra la elección propia. "aleatorio" elige uno por día sin repetir el anterior. `createStars()` solo delega en `SquadlyBg.render()`.
+
 **Spin eligibility:** `getEligible()` filters `state.members` by status and, if `requireOnline` is set, by `isMemberOnline()`. Minimum participant count is enforced before allowing a spin.
 
 ## Room types

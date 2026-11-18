@@ -8,12 +8,16 @@ echo "  Squadly — Deploy a Cloudflare Pages"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 cd "$DIR"
 
+# Archivos de la app original que se copian tal cual a dist/ (además de public/ y el build React).
+# firebase-config.js no va acá: está en .gitignore (credenciales) y se copia aparte.
+STATIC_FILES=(index.html styles.css guide.html backgrounds.js _headers)
+
 # 0. Solo se publica código commiteado y pusheado: lo que está en producción tiene que estar en GitHub.
 #    Emergencia: SKIP_GIT_CHECK=1 ./deploy.sh
 if [ "${SKIP_GIT_CHECK:-}" != "1" ]; then
   echo "🔎 Verificando git..."
-  # Archivos sin commitear (los no trackeados solo importan dentro de src/ y public/, que se publican)
-  PENDING="$(git status --porcelain --untracked-files=no; git status --porcelain -- src public | grep '^??' || true)"
+  # Cambios sin commitear en archivos trackeados, o archivos nuevos sin agregar entre los que se publican
+  PENDING="$(git status --porcelain --untracked-files=no; git status --porcelain -- src public "${STATIC_FILES[@]}" | grep '^??' || true)"
   if [ -n "$PENDING" ]; then
     echo "❌ Hay cambios sin commitear:"
     echo "$PENDING"
@@ -39,11 +43,8 @@ npm run build
 
 # 2. Copiar app original (vanilla JS) y assets al dist/
 echo "📋 Copiando app original y assets..."
-cp "$DIR/index.html"        "$DIR/dist/index.html"
-cp "$DIR/styles.css"        "$DIR/dist/styles.css"
-cp "$DIR/guide.html"        "$DIR/dist/guide.html"
+for f in "${STATIC_FILES[@]}"; do cp "$DIR/$f" "$DIR/dist/$f"; done
 cp "$DIR/firebase-config.js" "$DIR/dist/firebase-config.js"
-cp "$DIR/_headers"           "$DIR/dist/_headers"
 # Copiar carpeta public/ (manifest, iconos PWA)
 [ -d "$DIR/public" ] && cp -r "$DIR/public/." "$DIR/dist/"
 # Copiar favicon legacy si existe en raíz
