@@ -37,6 +37,8 @@ npm run build
 
 Deploys to **https://squadly.pages.dev** via Cloudflare Wrangler (auto-installs if missing). First run requires `wrangler login`.
 
+**Versión:** la fuente única es `"version"` en `package.json` (semver: patch para arreglos, minor para funciones nuevas). Se muestra en el pie del lobby y de la sala: la app React la recibe por `define` en `vite.config.ts` (`__APP_VERSION__`), y `deploy.sh` reemplaza el marcador `__APP_VERSION__` en `dist/index.html` (en Live Server se ve "dev"). Para subir de versión: `npm version <x.y.z> --no-git-tag-version` antes del deploy.
+
 ## Variables de entorno
 
 Copiar `.env.example` a `.env` y completar con las credenciales de Firebase. **Nunca commitear `.env`.**

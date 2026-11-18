@@ -53,6 +53,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* LOBBY */
 .lobby{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:32px 16px;}
+.app-version{font-size:11px;color:var(--text3);text-align:center;opacity:.7;margin:24px 0 8px;}
 .lobby-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid var(--border);}
 .lobby-logo{display:flex;align-items:center;gap:12px;}
 .lobby-logo-icon{font-size:28px;}
@@ -772,6 +773,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       </div>
     </div>
     <div style="font-size:12px;color:var(--text3);text-align:center;margin-top:16px;" id="lobbyDate"></div>
+    <div class="app-version"></div>
   </div>
 </div>
 
@@ -979,6 +981,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <div class="history-list" id="historyList"></div>
     <div id="historyEmpty" class="empty-state" style="display:none"><div class="big">📋</div>Aún no hay sorteos.<br>¡Girá la ruleta!</div>
   </div>
+  <div class="app-version"></div>
 </div>
 </div>
 
@@ -1489,6 +1492,11 @@ const db = getDatabase(fbApp);
 const auth = getAuth(fbApp);
 const provider = new GoogleAuthProvider();
 const microsoftProvider = new OAuthProvider('microsoft.com');
+
+// ===== VERSION =====
+// deploy.sh reemplaza el marcador por la versión de package.json. Sin reemplazar (Live Server) → "dev".
+const APP_VERSION = '__APP_VERSION__';
+document.querySelectorAll('.app-version').forEach(el=>{ el.textContent='Squadly '+(APP_VERSION.startsWith('__')?'dev':'v'+APP_VERSION); });
 
 // ===== STATE =====
 let currentUser = null;       // Firebase Auth user

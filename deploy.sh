@@ -24,6 +24,11 @@ cp "$DIR/_headers"           "$DIR/dist/_headers"
 # Copiar favicon legacy si existe en raíz
 [ -f "$DIR/favicon.ico" ]  && cp "$DIR/favicon.ico"  "$DIR/dist/favicon.ico"
 
+# Inyectar la versión de package.json en la app original (la React la toma de Vite)
+VERSION="$(node -p "require('./package.json').version")"
+sed -i "s/__APP_VERSION__/$VERSION/g" "$DIR/dist/index.html"
+echo "🏷️  Versión $VERSION"
+
 # 3. Instalar wrangler si falta
 if ! command -v wrangler &> /dev/null; then
   echo "📦 Instalando Wrangler..."

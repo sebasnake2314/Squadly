@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { User } from 'firebase/auth'
 import { SquadlyLogo } from '../components/common/SquadlyLogo'
 import { UserAvatar } from '../components/common/UserAvatar'
+import { AppVersion } from '../components/common/AppVersion'
 import { signOut } from '../services/auth'
 import { deleteRoom } from '../services/rooms'
 import { useRooms, type AdminRoom, type ParticipantRoom } from '../hooks/useRooms'
@@ -132,6 +133,8 @@ export function LobbyView({ user, onEnterRoom, autoJoinCode }: Props) {
           onClose={() => setModal(null)}
         />
       )}
+
+      <AppVersion />
     </div>
   )
 }

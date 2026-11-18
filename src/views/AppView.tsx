@@ -19,6 +19,7 @@ import { EditProfileModal } from '../components/room/EditProfileModal'
 import type { Member, HistoryEntry, MemberStatus, RoomMeta } from '../types'
 import type { RoomContext } from '../services/status'
 import { UserAvatar } from '../components/common/UserAvatar'
+import { AppVersion } from '../components/common/AppVersion'
 
 type Tab = 'ruleta' | 'equipo' | 'historial'
 
@@ -104,6 +105,8 @@ export function AppView({ roomId, user, isAdmin, onBack }: Props) {
           onClose={() => setShowConfig(false)}
         />
       )}
+
+      <AppVersion />
     </div>
   )
 }

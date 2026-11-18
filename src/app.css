@@ -1062,3 +1062,12 @@
   border-color: var(--accent);
   background: rgba(108,99,255,.1);
 }
+
+/* Versión de la app (pie del lobby y la sala) */
+.app-version {
+  font-size: 11px;
+  color: var(--text3);
+  text-align: center;
+  opacity: .7;
+  margin: 24px 0 8px;
+}
