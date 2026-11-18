@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file provides guidance to coding agents (Codex, etc.) when working with code in this repository.
 
 ## Project overview
 
@@ -32,10 +32,15 @@ npm run build
 ## Deploy
 
 ```bash
+git push        # siempre antes: commit → push → deploy
 ./deploy.sh
 ```
 
+**Regla: solo se despliega código commiteado y pusheado.** `deploy.sh` aborta si hay cambios sin commitear (incluidos archivos nuevos en `src/` o `public/`), si hay commits sin push o si falta un pull. Emergencia: `SKIP_GIT_CHECK=1 ./deploy.sh`. El commit desplegado queda registrado en Cloudflare (`--commit-hash`).
+
 Deploys to **https://squadly.pages.dev** via Cloudflare Wrangler (auto-installs if missing). First run requires `wrangler login`.
+
+**Versión:** la fuente única es `"version"` en `package.json` (semver: patch para arreglos, minor para funciones nuevas). Se muestra en el pie del lobby y de la sala: la app React la recibe por `define` en `vite.config.ts` (`__APP_VERSION__`), y `deploy.sh` reemplaza el marcador `__APP_VERSION__` en `dist/index.html` (en Live Server se ve "dev"). Para subir de versión: `npm version <x.y.z> --no-git-tag-version` antes del deploy.
 
 ## Variables de entorno
 
@@ -114,6 +119,10 @@ memberLinks/{uid}/{roomId}   ← links Google account to a memberId
 **Two modal contexts for game/music selection:** The create-room modal and the config modal share the same selector UI but store selections in separate variables (`selectedGameMode` / `cfgGameMode`). Always pass the `ctx` argument ('create' or 'config') to `selectGameMode()` / `selectMusic()`.
 
 **Member status hierarchy:** `getMemberStatus()` checks (in order): facilitating today → assigned tomorrow → unavailable tomorrow → free day 1 → free day 2 → eligible. It additionally applies the `requireOnline` room setting. `getMemberStatusBase()` is the same without the online check.
+
+**Días hábiles:** `workDays` en `rooms/` y `roomsMeta/` (números de `getDay()`, 0=domingo); sin definir → lunes a viernes. Solo se sortea en días hábiles, los días libres cuentan solo días hábiles, y "mañana" (`assigned_tomorrow`, `dueMode: 'tomorrow'`) es el próximo día hábil. Las fechas `YYYY-MM-DD` son en hora local (`ymd()`), nunca `toISOString()` (UTC). Lógica duplicada en `index.html` (sección DÍAS HÁBILES) y `src/utils/dates.ts`.
+
+**Fondos animados:** `backgrounds.js` (script clásico en la raíz, compartido por `index.html` y `guide.html`) pinta el fondo en `#stars` y tiene el selector 🎨. Prioridad: elección propia (localStorage `sq_bg`) → fondo de la sala (`background` en `rooms/` y `roomsMeta/`, lo define el admin en ⚙ Configurar y se aplica con `SquadlyBg.setRoomDefault()` en `applyRoomHeader`/`applyRegRoomHeader`) → Estrellas fugaces. "Automático" en el menú borra la elección propia. "aleatorio" elige uno por día sin repetir el anterior. `createStars()` solo delega en `SquadlyBg.render()`.
 
 **Spin eligibility:** `getEligible()` filters `state.members` by status and, if `requireOnline` is set, by `isMemberOnline()`. Minimum participant count is enforced before allowing a spin.
 
