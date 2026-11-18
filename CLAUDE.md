@@ -32,8 +32,11 @@ npm run build
 ## Deploy
 
 ```bash
+git push        # siempre antes: commit → push → deploy
 ./deploy.sh
 ```
+
+**Regla: solo se despliega código commiteado y pusheado.** `deploy.sh` aborta si hay cambios sin commitear (incluidos archivos nuevos en `src/` o `public/`), si hay commits sin push o si falta un pull. Emergencia: `SKIP_GIT_CHECK=1 ./deploy.sh`. El commit desplegado queda registrado en Cloudflare (`--commit-hash`).
 
 Deploys to **https://squadly.pages.dev** via Cloudflare Wrangler (auto-installs if missing). First run requires `wrangler login`.
 

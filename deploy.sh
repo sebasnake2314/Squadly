@@ -6,10 +6,35 @@ PROJECT="squadly"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  Squadly — Deploy a Cloudflare Pages"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+cd "$DIR"
+
+# 0. Solo se publica código commiteado y pusheado: lo que está en producción tiene que estar en GitHub.
+#    Emergencia: SKIP_GIT_CHECK=1 ./deploy.sh
+if [ "${SKIP_GIT_CHECK:-}" != "1" ]; then
+  echo "🔎 Verificando git..."
+  # Archivos sin commitear (los no trackeados solo importan dentro de src/ y public/, que se publican)
+  PENDING="$(git status --porcelain --untracked-files=no; git status --porcelain -- src public | grep '^??' || true)"
+  if [ -n "$PENDING" ]; then
+    echo "❌ Hay cambios sin commitear:"
+    echo "$PENDING"
+    echo "   Hacé commit y push antes de desplegar."
+    exit 1
+  fi
+  git fetch -q origin
+  if ! git rev-parse -q --verify '@{u}' > /dev/null; then
+    echo "❌ La rama $(git branch --show-current) no tiene rama remota. Hacé push antes de desplegar."
+    exit 1
+  fi
+  if [ "$(git rev-parse HEAD)" != "$(git rev-parse '@{u}')" ]; then
+    echo "❌ Tu rama no coincide con $(git rev-parse --abbrev-ref '@{u}'): $(git rev-list --count '@{u}..HEAD') commit(s) sin push, $(git rev-list --count 'HEAD..@{u}') sin traer."
+    echo "   Hacé push (o pull) antes de desplegar."
+    exit 1
+  fi
+  echo "   ✓ $(git rev-parse --short HEAD) commiteado y pusheado"
+fi
 
 # 1. Build React app
 echo "📦 Construyendo app React..."
-cd "$DIR"
 npm run build
 
 # 2. Copiar app original (vanilla JS) y assets al dist/
@@ -42,10 +67,13 @@ fi
 
 # 4. Deploy desde dist/
 echo "📤 Subiendo a Cloudflare Pages..."
+# El commit queda registrado en el panel de Cloudflare: así se sabe qué código está en cada deploy
 wrangler pages deploy "$DIR/dist" \
   --project-name="$PROJECT" \
   --branch main \
-  --commit-dirty=true
+  --commit-hash="$(git rev-parse HEAD)" \
+  --commit-message="v$VERSION $(git log -1 --format=%s)" \
+  --commit-dirty="$([ "${SKIP_GIT_CHECK:-}" = "1" ] && echo true || echo false)"
 
 echo ""
 echo "✅ Listo!"
