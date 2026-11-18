@@ -219,6 +219,14 @@
     BUILDERS[id](c);
   }
 
+  /** Pinta un fondo dado dentro de cualquier elemento (miniaturas de la guía) */
+  function renderInto(el, id) {
+    if (!el || !BUILDERS[id]) return;
+    ensureCss();
+    el.innerHTML = '';
+    BUILDERS[id](el);
+  }
+
   /** Guarda la elección propia; AUTO la borra para volver a seguir el fondo de la sala */
   function set(choice) {
     if (choice === AUTO.id) store.remove(KEY);
@@ -281,5 +289,5 @@
     document.addEventListener('keydown', onKey, true);
   }
 
-  window.SquadlyBg = { render, set, setRoomDefault, getChoice, resolve, openPicker, closePicker, OPTIONS, RANDOM };
+  window.SquadlyBg = { render, renderInto, set, setRoomDefault, getChoice, resolve, openPicker, closePicker, OPTIONS, RANDOM };
 })();

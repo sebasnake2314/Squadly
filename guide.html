@@ -185,6 +185,20 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
 .flow-step{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:12px;font-weight:600;text-align:center;min-width:90px;}
 .flow-arrow{color:var(--text3);font-size:16px;padding:0 6px;flex-shrink:0;}
 
+/* FONDOS: miniaturas animadas (las pinta backgrounds.js) */
+.bg-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+.bg-tile-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:8px 8px 10px;text-align:center;}
+.bg-tile{position:relative;height:92px;border-radius:9px;overflow:hidden;background:var(--bg);margin-bottom:8px;}
+.bg-tile .bg-wheel{width:300px;height:300px;right:-150px;bottom:-150px;opacity:.14;}
+.bg-tile .bg-grid-floor{background-size:30px 30px;}
+.bg-tile .bg-wave{transform:scaleY(.55);transform-origin:bottom;}
+.bg-tile .bg-neon{width:42px !important;}
+.bg-tile-random{display:flex;align-items:center;justify-content:center;font-size:30px;background:linear-gradient(135deg,rgba(108,99,255,.18),rgba(192,38,211,.12));}
+.bg-tile-name{font-size:12px;font-weight:700;}
+.bg-tile-desc{font-size:10.5px;color:var(--text3);margin-top:2px;}
+@media(max-width:680px){.bg-tiles{grid-template-columns:1fr 1fr;}}
+@media (prefers-reduced-motion: reduce){ .bg-tile *{animation:none !important} }
+
 /* RESPONSIVE */
 @media(max-width:480px){
   .guide-content{padding:32px 16px 60px;}
@@ -224,6 +238,7 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
     <a class="nav-link" href="#administrador">Administrador</a>
     <a class="nav-link" href="#participante">Participante</a>
     <a class="nav-link" href="#modos">Modos de juego</a>
+    <a class="nav-link" href="#fondos">Fondos</a>
     <a class="nav-link" href="#faq">Preguntas frecuentes</a>
   </div>
 </nav>
@@ -380,6 +395,13 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
         <div>
           <div class="ci-name">Música de fondo</div>
           <div class="ci-desc">Música generada en tiempo real durante el sorteo. Opciones: Circo, 8-bit, GameShow, Hype o sin música.</div>
+        </div>
+      </div>
+      <div class="config-item">
+        <div class="ci-icon">🖼️</div>
+        <div>
+          <div class="ci-name">Fondo de la sala</div>
+          <div class="ci-desc">El fondo animado que ven quienes todavía no eligieron uno propio, por ejemplo los invitados que entran por primera vez. Podés elegir cualquiera de los 10, Aleatorio (uno por día) o dejarlo sin definir. Ver <a href="#fondos" style="color:var(--accent2);">Fondos</a>.</div>
         </div>
       </div>
     </div>
@@ -573,7 +595,65 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
     </div>
   </section>
 
-  <!-- § 5 — FAQ -->
+  <!-- § 5 — FONDOS -->
+  <section class="guide-section" id="fondos">
+    <div class="section-tag">Personalización</div>
+    <h2 class="section-title">Fondos</h2>
+    <p class="section-sub">Cada persona elige el fondo animado con el que ve Squadly, con el botón <strong>🎨</strong> del encabezado (en el lobby y dentro de la sala).</p>
+
+    <div class="bg-tiles">
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="fugaces"></div><div class="bg-tile-name">🌠 Estrellas fugaces</div><div class="bg-tile-desc">Por defecto</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="grilla"></div><div class="bg-tile-name">🕹️ Grilla retro</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="formas"></div><div class="bg-tile-name">🔷 Formas flotantes</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="degradado"></div><div class="bg-tile-name">🎨 Degradado</div><div class="bg-tile-desc">Sin animación</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="bokeh"></div><div class="bg-tile-name">🫧 Bokeh</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="ondas"></div><div class="bg-tile-name">🌊 Ondas</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="panal"></div><div class="bg-tile-name">🐝 Panal</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="ruleta"></div><div class="bg-tile-name">🎡 Ruleta gigante</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="neon"></div><div class="bg-tile-name">💡 Neón</div></div>
+      <div class="bg-tile-card"><div class="bg-tile" data-bg-preview="nieve"></div><div class="bg-tile-name">❄️ Nieve</div></div>
+    </div>
+    <div class="info-box" style="margin-top:16px;">
+      <span class="ib-icon">🎲</span>
+      <span><strong>Aleatorio</strong> pone uno de estos 10 fondos cada día, sin repetir el del día anterior, y lo mantiene todo ese día.</span>
+    </div>
+
+    <h3 style="font-size:16px;font-weight:700;margin:32px 0 12px;color:var(--accent2);">¿Qué fondo se ve?</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Se usa el primero que exista, en este orden:</p>
+    <div class="flow">
+      <div class="flow-step">🎨 Tu elección</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">🖼️ Fondo de la sala</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">🌠 Estrellas fugaces</div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>Tu elección</h3>
+          <p>Si elegiste un fondo con 🎨, ves ese en todas las salas, en el lobby y en esta guía. Se guarda en tu navegador: no cambia lo que ven los demás, y en otro dispositivo vas a tener que elegirlo de nuevo.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>Fondo de la sala</h3>
+          <p>Si no elegiste ninguno, dentro de una sala ves el que configuró el admin en <strong>⚙ Configurar</strong>. Así lo ven, por ejemplo, los invitados que entran por primera vez con el link, desde la pantalla de registro. Si el admin lo cambia, se actualiza al instante.</p>
+          <span class="step-tip">💡 Para volver a seguir el fondo de la sala después de elegir uno propio, elegí 🏠 Automático en el menú 🎨</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>Por defecto</h3>
+          <p>Si no hay ni elección propia ni fondo de la sala (por ejemplo, en el lobby), se ven las estrellas fugaces.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 6 — FAQ -->
   <section class="guide-section" id="faq">
     <div class="section-tag">Preguntas frecuentes</div>
     <h2 class="section-title">Preguntas frecuentes</h2>
@@ -664,8 +744,9 @@ code{background:var(--surface2);border:1px solid var(--border);border-radius:5px
 
 <script src="backgrounds.js"></script>
 <script>
-// Fondo: el mismo que eligió la persona en la app (backgrounds.js)
+// Fondo: el mismo que eligió la persona en la app (backgrounds.js), y miniaturas de la sección Fondos
 SquadlyBg.render();
+document.querySelectorAll('[data-bg-preview]').forEach(el => SquadlyBg.renderInto(el, el.dataset.bgPreview));
 
 // FAQ toggle
 function toggleFaq(btn){
